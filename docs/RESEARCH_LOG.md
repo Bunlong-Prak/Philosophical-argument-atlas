@@ -56,3 +56,33 @@ This document records all architectural decisions, mathematical formulations, em
 
 #### 3. Next Questions for Unit 1.3 / Milestone 2
 - Should we expose `atlas-core` via a CLI / `PyO3` / `wasm-bindgen` bridge next (Unit 1.3), or move into Milestone 2's bidirectional `.argdown` parser/exporter and curated `PhilArgs-15` starter corpus?
+
+
+---
+
+## Milestone 2, Unit 2.1: Bidirectional `.argdown` Bridge, `atlas-cli`, and the Multi-Hop Prior Inflation Discovery
+- **Date:** 2026-11-15
+- **Status:** Implemented, Verified (`8/8` unit tests + `3/3` strict-span CLI benchmark inspections), and Pushed
+
+### 1. Components Implemented
+1. **Lossless `.argdown` $\leftrightarrow$ `ArgumentHypergraph` Bridge (`crates/atlas-core/src/argdown.rs`):**
+   - `to_argdown` and `parse_argdown` support YAML frontmatter (`passage_id`, `source_text`), typed propositions with character-offset spans (`span: start..end, quote: "..."`), conjunctive support hyperedges (`<H1>: [P1] & [E1] +> [C]`), rebutting attacks (`->`), and Pollock undercutting attacks (`_>`).
+2. **Command-Line Research Instrument (`crates/atlas-cli/src/main.rs`):**
+   - `atlas-cli inspect <file> [--strict-spans] [--json]`: Validates character spans, runs `DF-QuAD` gradual semantics and `Dung` extension compilation in `<0.6ms`, and outputs ranked Minimal Premise Knockouts.
+   - `atlas-cli convert <file> --to <argdown|json>`: Lossless format conversion.
+3. **Initial Public-Domain Philosophical Benchmark (`datasets/phil-args/`):**
+   - `01_descartes_cogito.argdown` (Descartes, *Discourse on the Method* Part IV, Veitch translation)
+   - `02_hume_problem_of_induction.argdown` (Hume, *Enquiry Concerning Human Understanding* Sec. IV, 1748)
+   - `03_dostoevsky_ivan_rebellion.argdown` (Dostoevsky, *The Brothers Karamazov* Book V Ch. 4 "Rebellion", Garnett 1912 translation)
+
+### 2. Major Mathematical Finding: "Prior Inflation in Multi-Hop `DF-QuAD` Chains"
+- **Observation during Step 6/7 Inspection:**
+  When testing `03_dostoevsky_ivan_rebellion.argdown` ($P_1 \wedge E_1 \xrightarrow{H_1} P_2 \xrightarrow{H_2} P_3 \wedge E_2 \xrightarrow{H_3} C$), we initially assigned non-zero intrinsic priors $\sigma_0(P_2) = 0.15, \sigma_0(P_3) = 0.15, \sigma_0(C) = 0.35$ to the *intermediate derived claims* (`P2`, `P3`) and thesis (`C`).
+  When `E1` was knocked out ($\sigma_0(E_1) = 0$), $\tau(H_1)$ collapsed to $0$, yet `C` remained at $0.5150 > 0.50$!
+- **Mathematical Root Cause:**
+  Under classical `DF-QuAD` aggregation $\sigma^*(c) = \sigma_0(c) + (1 - \sigma_0(c)) v_{\text{sup}}(c)$, if intermediate derived claims in an $L$-hop chain $P_0 \xrightarrow{w} P_1 \xrightarrow{w} \dots \xrightarrow{w} P_L$ carry a positive prior $\sigma_0 > 0$, then even when the root premise $P_0$ is falsified ($\sigma^*(P_0) = 0$), the recurrence $\sigma^*(P_k) = \sigma_0 + (1 - \sigma_0) w \sigma^*(P_{k-1})$ converges toward the positive fixed point:
+  $$\sigma_{\infty} = \frac{\sigma_0}{1 - (1 - \sigma_0)w} > 0$$
+  Thus, non-zero priors on intermediate derived nodes cause **spurious self-inflation across multi-hop chains**.
+- **Principle of Grounded Evidential Priors (Our Fix):**
+  In deductive/evidential argument reconstruction, **foundational roots** (premises, objections, and enthymemes with no incoming support hyperedges) carry positive epistemic priors $\sigma_0 \in (0, 1]$, whereas **derived claims** (nodes whose justification within the passage derives from incoming `SupportHyperedge`s) must be initialized with $\sigma_0 = 0.0$ unless backed by independent external evidence.
+  With $\sigma_0(P_2) = \sigma_0(P_3) = \sigma_0(C) = 0.0$, `atlas-cli inspect` on Dostoevsky's *Rebellion* cleanly surfaces the exact two single-enthymeme knockouts (`[E2]` at cost `0.75` and `[E1]` at cost `0.88`) that collapse Ivan's thesis from `0.7125` to `0.0000`.

@@ -1,0 +1,16 @@
+---
+passage_id: descartes-discourse-cogito
+source_text: "Whilst I thus wished to think that all was false, it was absolutely necessary that I, who thus thought, should be somewhat; and as I observed that this truth, I think, therefore I am, was so certain and of such evidence that no ground of doubt, however extravagant, could be alleged by the sceptics capable of shaking it, I concluded that I might, without scruple, accept it as the first principle of the philosophy of which I was in search."
+---
+
+# Propositions
+[P1]: Even in radical doubt, the act of thinking or doubting is occurring. {type: explicit_premise, credence: 1.0000, speaker: "Descartes", span: 0..48, quote: "Whilst I thus wished to think that all was false"}
+[E1]: Whatever is actively thinking must exist while it is thinking. {type: enthymeme, credence: 0.9000, speaker: "Descartes (Implicit)"}
+[P2]: The thinker must exist as something while doubting. {type: explicit_premise, credence: 0.0000, speaker: "Descartes", span: 50..122, quote: "it was absolutely necessary that I, who thus thought, should be somewhat"}
+[P3]: Not even the most extravagant sceptical hypothesis can falsify the existence of the thinking subject in the moment of thought. {type: explicit_premise, credence: 0.9000, speaker: "Descartes", span: 225..320, quote: "no ground of doubt, however extravagant, could be alleged by the sceptics capable of shaking it"}
+[E2]: A proposition that survives maximal hyperbolic doubt qualifies as the foundational first principle of philosophy. {type: enthymeme, credence: 0.7800, speaker: "Descartes (Implicit)"}
+[C]: I think, therefore I exist as the foundational first principle of philosophy. {type: thesis, credence: 0.0000, speaker: "Descartes", span: 159..182, quote: "I think, therefore I am"}
+
+# Support Hyperedges
+<H1>: [P1] & [E1] +> [P2] {weight: 1.0000, scheme: modus_ponens}
+<H2>: [P2] & [P3] & [E2] +> [C] {weight: 0.9500, scheme: modus_ponens}

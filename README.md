@@ -55,6 +55,12 @@ cd argument-atlas
 
 # Run all unit tests across gradual semantics, Dung extensions, and knockout search
 cargo test
+
+# Inspect a primary philosophical passage (Descartes, Hume, or Dostoevsky) with strict character-span verification
+cargo run -p atlas-cli -- inspect datasets/phil-args/03_dostoevsky_ivan_rebellion.argdown --strict-spans
+
+# Convert between human-readable .argdown and Bipolar Hypergraph JSON
+cargo run -p atlas-cli -- convert datasets/phil-args/01_descartes_cogito.argdown --to json
 ```
 
 ---

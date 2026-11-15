@@ -1,0 +1,13 @@
+---
+passage_id: hume-problem-of-induction
+source_text: "All inferences from experience, therefore, are effects of custom, not of reasoning. For whenever the repetition of any particular act or operation produces a propensity to renew the same act or operation, without being impelled by any reasoning or process of the understanding, we always say, that this propensity is the effect of Custom."
+---
+
+# Propositions
+[P1]: Repeating an observation produces a psychological propensity to expect the same outcome without any demonstrative or probable reasoning step. {type: explicit_premise, credence: 0.9200, speaker: "David Hume", span: 97..276, quote: "the repetition of any particular act or operation produces a propensity to renew the same act or operation, without being impelled by any reasoning or process of the understanding"}
+[P2]: Any propensity formed by repetition without demonstrative or probable reasoning is by definition Custom (habit). {type: explicit_premise, credence: 0.9500, speaker: "David Hume", span: 298..337, quote: "this propensity is the effect of Custom"}
+[E1]: There is no non-circular Principle of the Uniformity of Nature capable of deductively justifying future expectations from past observations. {type: enthymeme, credence: 0.8500, speaker: "David Hume (Implicit)"}
+[C]: All inductive inferences from past experience are effects of custom rather than rational demonstration. {type: thesis, credence: 0.0000, speaker: "David Hume", span: 0..83, quote: "All inferences from experience, therefore, are effects of custom, not of reasoning."}
+
+# Support Hyperedges
+<H1>: [P1] & [P2] & [E1] +> [C] {weight: 0.9600, scheme: modus_ponens}

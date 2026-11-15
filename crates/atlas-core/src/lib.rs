@@ -1,3 +1,4 @@
+pub mod argdown;
 pub mod dung;
 pub mod gradual;
 pub mod knockout;
@@ -5,6 +6,7 @@ pub mod model;
 
 #[cfg(test)]
 mod tests {
+    use crate::argdown::{parse_argdown, to_argdown};
     use crate::dung::{solve_hypergraph_dung, DungFramework, Label};
     use crate::gradual::{
         df_quad_combine, solve_df_quad, ConjunctiveNorm, GradualSolverConfig,
@@ -564,5 +566,88 @@ mod tests {
         );
         assert!((kos_b[0].credence_cost - 1.1).abs() < 1e-6);
         assert!((kos_b[0].post_knockout_acceptability - 0.3).abs() < 1e-6);
+    }
+
+    #[test]
+    fn test_argdown_lossless_roundtrip_and_solving() {
+        let source = "I think, therefore I am. Yet it thinks does not entail a substantial ego.";
+        let original = ArgumentHypergraph {
+            passage_id: "descartes-vs-lichtenberg".to_string(),
+            source_text: Some(source.to_string()),
+            nodes: vec![
+                PropositionNode {
+                    id: "P1".to_string(),
+                    proposition: "There is thinking occurring now.".to_string(),
+                    node_type: NodeType::ExplicitPremise,
+                    span: Some(TextSpan {
+                        start_char: 0,
+                        end_char: 7,
+                        verbatim_quote: "I think".to_string(),
+                    }),
+                    speaker: Some("Descartes".to_string()),
+                    base_credence: 1.0,
+                },
+                PropositionNode {
+                    id: "E1".to_string(),
+                    proposition: "Thinking requires a persistent substantial ego.".to_string(),
+                    node_type: NodeType::Enthymeme,
+                    span: None,
+                    speaker: Some("Descartes (Implicit)".to_string()),
+                    base_credence: 0.75,
+                },
+                PropositionNode {
+                    id: "C".to_string(),
+                    proposition: "I exist as a thinking substance.".to_string(),
+                    node_type: NodeType::Thesis,
+                    span: Some(TextSpan {
+                        start_char: 19,
+                        end_char: 23,
+                        verbatim_quote: "I am".to_string(),
+                    }),
+                    speaker: Some("Descartes".to_string()),
+                    base_credence: 0.4,
+                },
+                PropositionNode {
+                    id: "U1".to_string(),
+                    proposition: "Immediate experience only warrants saying 'it thinks', not a substantial 'I'.".to_string(),
+                    node_type: NodeType::Objection,
+                    span: Some(TextSpan {
+                        start_char: 29,
+                        end_char: 72,
+                        verbatim_quote: "it thinks does not entail a substantial ego".to_string(),
+                    }),
+                    speaker: Some("Lichtenberg".to_string()),
+                    base_credence: 0.85,
+                },
+            ],
+            support_hyperedges: vec![SupportHyperedge {
+                id: "H1".to_string(),
+                premises: vec!["P1".to_string(), "E1".to_string()],
+                conclusion: "C".to_string(),
+                weight: 0.95,
+                scheme: Some(ArgumentationScheme::ModusPonens),
+            }],
+            rebutting_attacks: vec![],
+            undercutting_attacks: vec![UndercuttingAttack {
+                id: "UND1".to_string(),
+                attacker: "U1".to_string(),
+                target_hyperedge: "H1".to_string(),
+                weight: 0.8,
+            }],
+        };
+
+        original.validate(true).expect("Original graph valid");
+        let argdown_text = to_argdown(&original);
+        let parsed = parse_argdown(&argdown_text).expect("Parsed Argdown valid");
+        parsed.validate(true).expect("Round-tripped graph passes strict span verification");
+
+        let eval1 = solve_df_quad(&original, &GradualSolverConfig::default()).unwrap();
+        let eval2 = solve_df_quad(&parsed, &GradualSolverConfig::default()).unwrap();
+        for node in &original.nodes {
+            assert!(
+                (eval1.node_acceptability[&node.id] - eval2.node_acceptability[&node.id]).abs()
+                    < 1e-9
+            );
+        }
     }
 }

@@ -1,6 +1,7 @@
 [workspace]
 members = [
     "crates/atlas-core",
+    "crates/atlas-cli",
 ]
 resolver = "2"
 
