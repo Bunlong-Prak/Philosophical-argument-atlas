@@ -1,4 +1,4 @@
-# Argument Atlas (Dialectica Engine)
+# Philosophy Argument Atlas (Dialectica Engine)
 
 [![Rust](https://img.shields.io/badge/Rust-2021-orange?logo=rust)](https://www.rust-lang.org/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
