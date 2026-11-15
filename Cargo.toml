@@ -1,0 +1,12 @@
+[workspace]
+members = [
+    "crates/atlas-core",
+]
+resolver = "2"
+
+[workspace.package]
+version = "0.1.0"
+edition = "2021"
+license = "MIT"
+authors = ["Bunlong Prak (Nate) <prakbunlong53@gmail.com>"]
+repository = "https://github.com/Bunlong-Prak/argument-atlas"
