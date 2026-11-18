@@ -1,0 +1,31 @@
+[project]
+name = "atlas-ml"
+version = "0.1.0"
+description = "Neuro-symbolic argument extraction, deterministic span grounding, and NLI-constrained enthymeme abduction for Argument Atlas."
+requires-python = ">=3.11,<3.14"
+dependencies = [
+    "pydantic>=2.9.0",
+    "torch>=2.4.0",
+    "transformers>=4.45.0",
+    "sentence-transformers>=3.2.0",
+    "sentencepiece>=0.2.0",
+    "protobuf>=4.25.0",
+    "scipy>=1.14.0",
+    "numpy>=1.26.0",
+]
+
+[dependency-groups]
+dev = [
+    "pytest>=8.3.0",
+]
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/atlas_ml"]
+
+[tool.pytest.ini_options]
+pythonpath = ["src"]
+testpaths = ["tests"]
