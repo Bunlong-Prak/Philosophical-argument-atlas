@@ -86,3 +86,31 @@ This document records all architectural decisions, mathematical formulations, em
 - **Principle of Grounded Evidential Priors (Our Fix):**
   In deductive/evidential argument reconstruction, **foundational roots** (premises, objections, and enthymemes with no incoming support hyperedges) carry positive epistemic priors $\sigma_0 \in (0, 1]$, whereas **derived claims** (nodes whose justification within the passage derives from incoming `SupportHyperedge`s) must be initialized with $\sigma_0 = 0.0$ unless backed by independent external evidence.
   With $\sigma_0(P_2) = \sigma_0(P_3) = \sigma_0(C) = 0.0$, `atlas-cli inspect` on Dostoevsky's *Rebellion* cleanly surfaces the exact two single-enthymeme knockouts (`[E2]` at cost `0.75` and `[E1]` at cost `0.88`) that collapse Ivan's thesis from `0.7125` to `0.0000`.
+
+
+---
+
+## Milestone 3, Unit 3.1: Python Neuro-Symbolic Package (`atlas-ml`), Deterministic Span Grounder & Abductive-NLI Enthymeme Scorer
+- **Date:** 2026-11-17
+- **Status:** Implemented, Empirically Verified on Apple M3 MPS (`4/4` pytest + `3/3` exact 4-class ablation verdicts)
+
+### 1. Components Implemented
+1. **Rust Solver IPC (`crates/atlas-cli/src/main.rs` & `backend/src/atlas_ml/rust_bridge.py`):**
+   - Added `atlas-cli solve --stdin [--strict-spans] [--threshold <f64>] [--t-norm <godel|product>]`, solving full BAH graphs (`DF-QuAD` + `Dung` + `MinimalKnockouts`) in **`100 µs`** in `--release` mode.
+   - `AtlasRustBridge` provides typed Pydantic v2 round-tripping between Python (`atlas_ml`) and Rust (`atlas-core`).
+2. **Deterministic Character-Span Grounder (`backend/src/atlas_ml/schemas.py`):**
+   - `DeterministicSpanGrounder` maps approximate LLM-extracted quotes back to exact Unicode scalar `[start_char..end_char]` offsets (compatible 1-to-1 with Rust's `Vec<char>` validation) via exact matching, whitespace/smart-quote normalization, duplicate disambiguation via `hint_start`, and bounded fuzzy anchor alignment (`SequenceMatcher`), strictly rejecting ungrounded hallucinations (`SpanGroundingError`).
+3. **Abductive-NLI Enthymeme Scorer (`backend/src/atlas_ml/nli_enthymeme.py`):**
+   - Hardware-aware sizing for 8 GB Apple Silicon M3 (`mps`): uses `MoritzLaurer/DeBERTa-v3-base-mnli-fever-anli` (`184M` params, dynamic `id2label` lookup) + `BAAI/bge-small-en-v1.5` (`33M` params).
+   - Evaluates candidate implicit premises via:
+     $$\mathcal{S}(E \mid P, C) = \Delta\text{NLI}(E \mid P, C) - \lambda_{\text{usurp}} \cdot U(E, C) - \lambda_{\text{triv}} \cdot T(E, P, C) - 0.50 \cdot P_{\text{contra}}(C \mid P \cup \{E\})$$
+
+### 2. Empirical Bugs & NLI Failure Modes Discovered and Fixed
+1. **Fuzzy Alignment Window Truncation on Parenthetical Omissions:**
+   - *Failure:* `"All inferences from experience are effects of custom"` failed to align to `"All inferences from experience, therefore, are effects of custom, not of reasoning."` because the initial `1.15x` window cap clipped off the end of `"custom"` when `", therefore,"` expanded the source span by 12 chars.
+   - *Fix:* Expanded window to `1.35x + 12` and computed `[local_start..local_end]` strictly from anchor blocks of length $\ge 3$, avoiding stray 1-character tail matches.
+2. **NLI Conflation of Material Conditionals and Inductive Over-Generalization (`eval_enthymeme_ablation.py`):**
+   - *Observation 1 (Material Conditional Usurpation):* `DeBERTa-v3` assigned $P_{\text{NLI}}(C \mid \text{"If } P \text{, then } C\text{"}) = 0.977\text{--}0.986$ even though a material conditional alone does not entail its consequent! Combining $\cos(\phi(E), \phi(T_{P \to C})) > 0.80$ with `novel_content_ratio` (`0.00` on all three tautologies) cleanly isolates trivial conditionals (`trivial_tautology`).
+   - *Observation 2 (Reverse NLI Inductive Over-Generalization vs. Paraphrase Usurpation):* In Dostoevsky, a paraphrase usurpation (*"Cosmic harmony purchased by innocent suffering is morally unacceptable and unworthy"*) escaped forward NLI (`usurpNLI=0.217`) because it omitted `"child's"`, yet scored `revNLI = 0.985` ($C \implies E$). Conversely, applying raw `revNLI` directly flagged Descartes' gold universal bridge (*"Whatever is actively thinking must exist..."*) because `DeBERTa-v3` over-generalized a single-subject claim into a universal law (`revNLI = 0.916`).
+   - *Fix:* Gated reverse-entailment circularity on semantic proximity (`reverse_nli >= 0.93 and concl_sim >= 0.86`).
+   - *Verified Result (`MPS`, 2.23s model load):* Gold enthymeme ranked **#1 in 3/3 passages** (Descartes `+0.5122`, Hume `+0.2986`, Dostoevsky `+0.8439`) with **3/3 exact 4-class categorical verdicts** across all 12 candidates.
