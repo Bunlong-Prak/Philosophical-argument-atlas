@@ -1,0 +1,22 @@
+---
+passage_id: mill-on-liberty-infallibility
+source_text: "First, if any opinion is compelled to silence, that opinion may, for aught we can certainly know, be true. To deny this is to assume our own infallibility. It is not the feeling sure of a doctrine (be it what it may) which I call an assumption of infallibility. It is the undertaking to decide that question for others, without allowing them to hear what can be said on the contrary side."
+---
+
+# Propositions
+[P_censor]: Holding a strong personal conviction that a doctrine is true does not presume infallibility. {type: counterfactual_assumption, credence: 0.9000, speaker: "Censor", span: 156..261, quote: "It is not the feeling sure of a doctrine (be it what it may) which I call an assumption of infallibility."}
+[E_censor]: If a doctrine is earnestly felt to be certain, authorities are entitled to enforce it by silencing dissent. {type: enthymeme, credence: 0.7000, speaker: "Censor (Implicit)"}
+[Censorship]: Authorities may legitimately decide truth for others by silencing contrary opinions. {type: objection, credence: 0.0000, speaker: "Censor", span: 268..388, quote: "the undertaking to decide that question for others, without allowing them to hear what can be said on the contrary side."}
+[P1]: Any suppressed opinion might in fact be true given human fallibility. {type: explicit_premise, credence: 0.9500, speaker: "J.S. Mill", span: 7..106, quote: "if any opinion is compelled to silence, that opinion may, for aught we can certainly know, be true."}
+[E1]: No human authority possesses epistemic infallibility, and acting as if infallible is epistemically illegitimate. {type: enthymeme, credence: 0.9500, speaker: "J.S. Mill (Implicit)"}
+[C]: Denying the fallibility of silencing dissent assumes unjustified human infallibility and is illegitimate. {type: thesis, credence: 0.0000, speaker: "J.S. Mill", span: 107..155, quote: "To deny this is to assume our own infallibility."}
+
+# Support Hyperedges
+<H_censor>: [P_censor] & [E_censor] +> [Censorship] {weight: 0.8500, scheme: practical_reasoning}
+<H_mill>: [P1] & [E1] +> [C] {weight: 0.9600, scheme: modus_tollens}
+
+# Rebutting Attacks
+<R1>: [C] -> [Censorship] {weight: 0.9500}
+
+# Undercutting Attacks
+<UND1>: [C] _> <H_censor> {weight: 0.9500}

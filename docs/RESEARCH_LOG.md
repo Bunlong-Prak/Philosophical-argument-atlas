@@ -114,3 +114,28 @@ This document records all architectural decisions, mathematical formulations, em
    - *Observation 2 (Reverse NLI Inductive Over-Generalization vs. Paraphrase Usurpation):* In Dostoevsky, a paraphrase usurpation (*"Cosmic harmony purchased by innocent suffering is morally unacceptable and unworthy"*) escaped forward NLI (`usurpNLI=0.217`) because it omitted `"child's"`, yet scored `revNLI = 0.985` ($C \implies E$). Conversely, applying raw `revNLI` directly flagged Descartes' gold universal bridge (*"Whatever is actively thinking must exist..."*) because `DeBERTa-v3` over-generalized a single-subject claim into a universal law (`revNLI = 0.916`).
    - *Fix:* Gated reverse-entailment circularity on semantic proximity (`reverse_nli >= 0.93 and concl_sim >= 0.86`).
    - *Verified Result (`MPS`, 2.23s model load):* Gold enthymeme ranked **#1 in 3/3 passages** (Descartes `+0.5122`, Hume `+0.2986`, Dostoevsky `+0.8439`) with **3/3 exact 4-class categorical verdicts** across all 12 candidates.
+
+
+---
+
+## Milestone 2, Unit 2.2 & Milestone 4 Core: `PhilArgs-6` Dialectical Corpus & Bipartite Semantic Hypergraph Aligner
+- **Date:** 2026-11-18
+- **Status:** Implemented & Empirically Verified (`8/8` Rust tests, `6/6` pytest, live `bge-small` alignment `1.0000`)
+
+### 1. Components Implemented
+1. **Expanded Dialectical Corpus (`datasets/phil-args/`):**
+   - Added 3 rich public-domain dialectical passages verified with strict character spans (`--strict-spans`):
+     - `04_plato_euthyphro_dilemma.argdown` (Jowett translation): Exercises both rebutting attacks (`->`) and Pollock undercutting attacks (`_>`), defeating Euthyphro's divine-command thesis `[C]` (`0.0000`, `Dung=Out`, `<H1>` transmission crushed to `0.1191` in `40 µs`).
+     - `05_kant_third_antinomy.argdown` (Meiklejohn translation): Exercises symmetric mutual rebuttal cycles (`Thesis <-> Antithesis`), converging via `DF-QuAD` relaxation to a `0.4000` dialectical tie where `Grounded` labels both `Undecided` and `Preferred`/`Stable` split into 2 worldviews (`44 µs`).
+     - `06_mill_on_liberty_infallibility.argdown` (J.S. Mill, 1859): Exercises counterfactual censorship premises undercut and defeated by Mill's fallibilism (`[C] = 0.9120`, `Dung=In`; `[Censorship] = 0.0000`, `Dung=Out` in `54 µs`).
+2. **Hungarian Bipartite Semantic Hypergraph Aligner (`backend/src/atlas_ml/graph_aligner.py`):**
+   - Shared mathematical core for Milestone 3 benchmark evaluation (`Predicted vs. Gold`) and Milestone 4 Hermeneutic Prism (`Model A vs. Model B` consensus).
+   - Computes optimal node matching (`scipy.optimize.linear_sum_assignment` over `BAAI/bge-small-en-v1.5` embeddings), per-category F1 (`explicit_node_prf`, `enthymeme_prf`), canonical ID-invariant `support_hyperedge_exact_prf`, partial-credit `support_link_prf`, `rebuttal_prf`, and `undercutter_prf` (matching undercutting attacks over canonical hyperedge signatures).
+
+### 2. Bugs & Embedding Geometry Failures Discovered and Fixed
+1. **Relative `repo_root` Resolution Bug in `AtlasRustBridge` (`rust_bridge.py`):**
+   - *Symptom:* Passing relative `Path("..")` caused `FileNotFoundError` because `subprocess.run(..., cwd=str(self.repo_root))` resolved `cmd[0]` (`../target/release/atlas-cli`) twice.
+   - *Fix:* Normalized `self.repo_root = Path(repo_root).resolve()`.
+2. **Embedding-Space Inversion Between Implicit Enthymemes and Derived Conclusions (`eval_corpus_and_aligner.py`):**
+   - *Observation:* On live `BAAI/bge-small-en-v1.5` embeddings of Plato's *Euthyphro*, pure cosine Hungarian matching swapped `alt_E1 <-> C` (`0.810`) and `alt_C <-> E1` (`0.887`, sum `1.697`) over the true diagonal `alt_E1 <-> E1` (`0.840`) and `alt_C <-> C` (`0.847`, sum `1.687`) because an unspoken enthymeme and its conclusion share identical domain nouns (*"gods"*, *"holy"*, *"loved"*). That `0.010` cosine swap caused `Rebuttal F1` and `Undercutter F1` to collapse from `1.0000` to `0.0000`!
+   - *Fix:* Kept raw cosine threshold gating $\cos \ge \tau$, while adding a bounded epistemic-role tie-breaker (`+0.05` when matching explicit vs. implicit `Enthymeme` partition, `+0.02` when matching exact `NodeType`) inside the Hungarian objective. Re-running `eval_corpus_and_aligner.py` restored `Node F1 = 1.0000`, `Hyperedge F1 = 1.0000`, `Rebuttal F1 = 1.0000`, `Undercutter F1 = 1.0000`, `Consensus = 1.0000`.

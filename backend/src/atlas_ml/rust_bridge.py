@@ -58,7 +58,7 @@ class AtlasRustBridge:
         if repo_root is None:
             # backend/src/atlas_ml/rust_bridge.py -> repo root is 3 levels up from backend/src/atlas_ml
             repo_root = Path(__file__).resolve().parents[3]
-        self.repo_root = repo_root
+        self.repo_root = Path(repo_root).resolve()
 
     def _command_prefix(self) -> list[str]:
         release_bin = self.repo_root / "target" / "release" / "atlas-cli"

@@ -1,0 +1,20 @@
+---
+passage_id: kant-third-antinomy
+source_text: "Thesis: Causality in accordance with laws of nature is not the only causality from which the appearances of the world can one and all be derived. To explain these appearances it is necessary to assume that there is also another causality, that of freedom. Let us assume that there is no other kind of causality than that in accordance with laws of nature. Antithesis: There is no freedom; everything in the world takes place solely in accordance with laws of nature."
+---
+
+# Propositions
+[P1]: Suppose every event has a prior natural cause ad infinitum, yielding no unconditioned first beginning. {type: counterfactual_assumption, credence: 0.9000, speaker: "Kant (Thesis Proof)", span: 256..355, quote: "Let us assume that there is no other kind of causality than that in accordance with laws of nature."}
+[E1]: An infinite regress of dependent conditions fails to provide a complete sufficient explanation of phenomena. {type: enthymeme, credence: 0.8500, speaker: "Kant (Thesis Implicit)"}
+[Thesis]: Causality through transcendental freedom is necessary alongside the laws of nature. {type: thesis, credence: 0.0000, speaker: "Kant (Dogmatic Thesis)", span: 146..255, quote: "To explain these appearances it is necessary to assume that there is also another causality, that of freedom."}
+[P2]: Every empirical event in time must conform to an unbroken causal rule connecting it to a preceding state. {type: explicit_premise, credence: 0.9000, speaker: "Kant (Antithesis Proof)", span: 37..51, quote: "laws of nature"}
+[E2]: An uncaused spontaneous beginning would violate the causal unity required for coherent empirical experience. {type: enthymeme, credence: 0.8500, speaker: "Kant (Antithesis Implicit)"}
+[Antithesis]: There is no freedom; everything in the world occurs solely by laws of nature. {type: objection, credence: 0.0000, speaker: "Kant (Empiricist Antithesis)", span: 368..466, quote: "There is no freedom; everything in the world takes place solely in accordance with laws of nature."}
+
+# Support Hyperedges
+<H1>: [P1] & [E1] +> [Thesis] {weight: 0.9412, scheme: reductio_ad_absurdum}
+<H2>: [P2] & [E2] +> [Antithesis] {weight: 0.9412, scheme: modus_ponens}
+
+# Rebutting Attacks
+<R1>: [Thesis] -> [Antithesis] {weight: 1.0000}
+<R2>: [Antithesis] -> [Thesis] {weight: 1.0000}

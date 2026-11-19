@@ -1,0 +1,23 @@
+---
+passage_id: plato-euthyphro-dilemma
+source_text: "Piety, then, is that which is dear to the gods, and impiety is that which is not dear to them. The point which I should first wish to understand is whether the pious or holy is beloved by the gods because it is holy, or holy because it is beloved of the gods. But that which is dear to the gods is dear to them because it is loved by them, not loved by them because it is dear to them."
+---
+
+# Propositions
+[P1]: Piety is identical with whatever is dear to (beloved by) the gods. {type: explicit_premise, credence: 0.8500, speaker: "Euthyphro", span: 0..46, quote: "Piety, then, is that which is dear to the gods"}
+[E1]: Being loved by the gods is what causally and constitutively makes an action holy. {type: enthymeme, credence: 0.7800, speaker: "Euthyphro (Implicit)"}
+[C]: Something is holy because it is beloved of the gods. {type: thesis, credence: 0.0000, speaker: "Euthyphro", span: 220..258, quote: "holy because it is beloved of the gods"}
+[P2]: The pious or holy is beloved by the gods because it is already holy. {type: explicit_premise, credence: 0.9200, speaker: "Socrates", span: 156..215, quote: "the pious or holy is beloved by the gods because it is holy"}
+[P3]: Being god-beloved (dear to the gods) is a passive state explained by the gods loving it. {type: explicit_premise, credence: 0.9500, speaker: "Socrates", span: 264..338, quote: "that which is dear to the gods is dear to them because it is loved by them"}
+[E2]: Two properties whose causal-explanatory ordering runs in opposite directions cannot be identical. {type: enthymeme, credence: 0.9200, speaker: "Socrates (Implicit)"}
+[U1]: God-belovedness is not the explanatory essence of holiness, since holiness is not caused merely by being dear to the gods. {type: objection, credence: 0.0000, speaker: "Socrates", span: 340..384, quote: "not loved by them because it is dear to them"}
+
+# Support Hyperedges
+<H1>: [P1] & [E1] +> [C] {weight: 0.9000, scheme: modus_ponens}
+<H2>: [P2] & [P3] & [E2] +> [U1] {weight: 0.9500, scheme: disjunctive_syllogism}
+
+# Rebutting Attacks
+<R1>: [U1] -> [C] {weight: 0.9500}
+
+# Undercutting Attacks
+<UND1>: [U1] _> <H1> {weight: 0.9500}

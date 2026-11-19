@@ -86,9 +86,9 @@ argument-atlas/
 ## Research Roadmap
 
 - [x] **Milestone 1 (Core Engine):** Bipolar Argumentation Hypergraph model, Hypergraph `DF-QuAD` gradual semantics solver, discrete Dung extension compiler (`Grounded`/`Preferred`/`Stable`), and Minimal Premise Knockout engine in Rust (`atlas-core` + `atlas-cli`).
-- [ ] **Milestone 2 (Benchmark & Interoperability):** Bidirectional `.argdown` $\leftrightarrow$ `ArgumentHypergraph` parser/exporter *(done)* and expanding the starter 3-passage corpus (`datasets/phil-args`) to `PhilArgs-50`.
-- [ ] **Milestone 3 (Neuro-Symbolic Extraction & Enthymeme Abduction):** Deterministic character-span grounder, Rust IPC bridge, and `DeBERTa-v3` + `BGE` Abductive-NLI enthymeme scorer *(Unit 3.1 done)*; multi-provider LLM extractor pipeline *(next)*.
-- [ ] **Milestone 4 (Hermeneutic Prism):** Multi-model bipartite semantic graph alignment (Hungarian algorithm over `BGE` proposition embeddings) to quantify interpretive consensus vs. divergence.
+- [ ] **Milestone 2 (Benchmark & Interoperability):** Bidirectional `.argdown` $\leftrightarrow$ `ArgumentHypergraph` parser/exporter *(done)* and expanding the curated public-domain corpus (`datasets/phil-args`, currently `PhilArgs-6` with Descartes, Hume, Dostoevsky, Plato, Kant, Mill) toward `PhilArgs-50`.
+- [ ] **Milestone 3 (Neuro-Symbolic Extraction & Enthymeme Abduction):** Deterministic character-span grounder, Rust IPC bridge, `DeBERTa-v3` + `BGE` Abductive-NLI enthymeme scorer *(Unit 3.1 done)*, and multi-provider LLM extractor pipeline *(next)*.
+- [ ] **Milestone 4 (Hermeneutic Prism):** Hungarian bipartite semantic graph aligner & F1 evaluation harness (`BipartiteGraphAligner` over `BGE` embeddings, *core done*); multi-model divergence API & UI *(upcoming)*.
 - [ ] **Milestone 5 (Interactive Scientific Workbench):** Next.js + React Flow + `elkjs` layered hypergraph canvas powered by `atlas-core` compiled to WebAssembly for 60fps counterfactual credence manipulation.
 
 ---
