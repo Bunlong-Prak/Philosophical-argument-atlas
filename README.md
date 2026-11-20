@@ -1,99 +1,128 @@
 # Philosophy Argument Atlas (Dialectica Engine)
 
 [![Rust](https://img.shields.io/badge/Rust-2021-orange?logo=rust)](https://www.rust-lang.org/)
+[![Python](https://img.shields.io/badge/Python-3.13-blue?logo=python)](backend/pyproject.toml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
-[![Status: Research Prototype](https://img.shields.io/badge/Status-Active_Research-emerald)](#roadmap)
 
-> **A Neuro-Symbolic Dialectical & Enthymematic Reasoning Workbench for Computational Philosophy.**  
-> Reconstructing dense philosophical prose into **Bipolar Argumentation Hypergraphs**, recovering unspoken premises (*enthymemes*) via NLI-constrained abduction, quantifying multi-model interpretive divergence, and executing a high-performance **Rust symbolic solver** (`atlas-core`) for formal acceptability semantics and minimal premise knockouts.
+Argument Atlas turns dense philosophical passages into formal argument hypergraphs, tests which hidden assumptions hold an argument together, and solves which claims survive under attack. It pairs a Rust formal argumentation solver (`atlas-core`) with a local PyTorch Natural Language Inference (NLI) filter (`atlas-ml`).
 
----
-
-## Why Argument Atlas?
-
-Existing LLM-based argument mining tools treat philosophical texts as flat node-link graphs ($G = (V, E)$) and force a single canonical interpretation. When applied to primary philosophical works (Plato, Descartes, Spinoza, Hume, Kant, Mill, Dostoevsky), naive pipelines fail on three fronts:
-
-1. **Conjunctive Premises & Enthymemes (The Unspoken Bridge):** Philosophical arguments are rarely deductively complete on the page; they rely on suppressed premises (*enthymemes*) linked conjunctively with explicit claims ($(P_{\text{explicit}} \wedge E_{\text{implicit}}) \implies C$). Modeling premises as independent edges fails to capture that rejecting a single essential assumption collapses the inference.
-2. **Rebutting vs. Undercutting Defeaters (Pollock, 1987):** An objection may attack a claim directly (**rebuttal**) or sever the inferential warrant between premises and conclusion (**undercutter**).
-3. **Hermeneutic Pluralism:** Complex texts admit competing legitimate reconstructions across philosophical schools and language models. Disagreement on implicit premises is an epistemic signal, not mere noise.
+If you want the visual walkthrough first, read [the ADHD-friendly guide](docs/GUIDE.md).
 
 ---
 
-## Formal Mathematical Architecture
+## See it work in 30 seconds
 
-Argument Atlas models arguments as a **Weighted Bipolar Argumentation Hypergraph (BAH)**:
+Take a single passage from Fyodor Dostoevsky's *The Brothers Karamazov* (Book V, Ch. 4, Constance Garnett translation), stored in [03_dostoevsky_ivan_rebellion.argdown](datasets/phil-args/03_dostoevsky_ivan_rebellion.argdown):
 
-$$\mathcal{H} = (\mathcal{A}, \mathcal{E}_{\text{sup}}, \mathcal{E}_{\text{att}}, \mathcal{E}_{\text{und}}, \sigma_0)$$
+> "Too high a price is asked for harmony; it is beyond our means to pay so much to enter on it. And so I hasten to give back my entrance ticket."
 
-- **Proposition Nodes ($\mathcal{A}$):** Typed as `Thesis`, `ExplicitPremise`, `Enthymeme`, `Objection`, or `CounterfactualAssumption`, with deterministic character-offset span verification (`[start_char..end_char]`) against the primary source text and intrinsic base credence $\sigma_0(a) \in [0, 1]$.
-- **Conjunctive Support Hyperedges ($\mathcal{E}_{\text{sup}}$):** Directed hyperedges $e = (S, c, w_e)$ where a non-empty premise set $S \subseteq \mathcal{A}$ jointly supports conclusion $c \in \mathcal{A}$ under a configurable T-norm (Gödel minimum $\min_{p \in S} \sigma(p)$ or Product $\prod_{p \in S} \sigma(p)$).
-- **Rebutting Attacks ($\mathcal{E}_{\text{att}} \subseteq \mathcal{A} \times \mathcal{A}$):** Direct proposition-to-proposition conflict.
-- **Undercutting Attacks ($\mathcal{E}_{\text{und}} \subseteq \mathcal{A} \times \mathcal{E}_{\text{sup}}$):** Pollock-style defeaters targeting a `SupportHyperedge` $e \in \mathcal{E}_{\text{sup}}$ directly.
+Ivan Karamazov's stated lines do not deductively entail his conclusion on their own. Two unspoken assumptions (*enthymemes*) carry the weight:
+- `[E1]` No future good justifies using an innocent child's suffering as a means (credence `0.88`).
+- `[E2]` If accepting cosmic harmony requires consenting to an immoral price, a moral agent must refuse it (credence `0.75`).
 
----
+Run the Rust solver on that file:
 
-## Core Capabilities Implemented in `crates/atlas-core`
-
-| Module | Capability | Description |
-| :--- | :--- | :--- |
-| `src/model.rs` | **Bipolar Hypergraph & Span Verifier** | Strongly typed BAH representation with deterministic substring quote verification (`ArgumentHypergraph::validate`) to prevent LLM quote hallucination. |
-| `src/gradual.rs` | **Hypergraph `DF-QuAD` Continuous Solver** | Generalizes *Discontinuity-Free Quantitative Argumentation Debate* semantics (Rago et al., KR 2016) to conjunctive hypergraphs and undercutters, using Successive Over-Relaxation (damped fixed-point iteration) to converge smoothly on cyclic dialectical graphs (e.g., Kant's *Antinomies*). |
-| `src/dung.rs` | **Discrete Dung Extensions (`Grounded`, `Preferred`, `Stable`)** | Compiles a Bipolar Hypergraph into a classical Dung Abstract Argumentation Framework via the *Inference-Gate Auxiliary Node Reduction* (`compile_hypergraph_to_dung`) and computes exact `Grounded`, `Preferred`, and `Stable` extensions with 3-valued (`In`, `Out`, `Undecided`) Caminada labelings. |
-| `src/knockout.rs` | **Minimal Premise Knockout Engine ("Achilles' Heel")** | Exact combinatorial search with minimal hitting-set pruning (`find_minimal_knockouts`) that discovers inclusion-minimal subsets of explicit premises and unspoken enthymemes whose removal collapses a target thesis below $\theta$, ranked by epistemic credence cost ($\sum_{k \in K} \sigma_0(k)$). |
-
----
-
-## Quick Start
-
-### Prerequisites
-- Rust toolchain (`1.75+`, tested on `rustc 1.96.0`)
-
-### Build & Run the Formal Verification Suite
 ```bash
-git clone https://github.com/Bunlong-Prak/argument-atlas.git
-cd argument-atlas
-
-# Run all unit tests across gradual semantics, Dung extensions, and knockout search
-cargo test
-
-# Inspect a primary philosophical passage (Descartes, Hume, or Dostoevsky) with strict character-span verification
-cargo run -p atlas-cli -- inspect datasets/phil-args/03_dostoevsky_ivan_rebellion.argdown --strict-spans
-
-# Convert between human-readable .argdown and Bipolar Hypergraph JSON
-cargo run -p atlas-cli -- convert datasets/phil-args/01_descartes_cogito.argdown --to json
+cargo run --release -p atlas-cli -- inspect datasets/phil-args/03_dostoevsky_ivan_rebellion.argdown --strict-spans
 ```
 
----
-
-## Repository Structure
+In under 1 millisecond, `atlas-cli` checks every quote character-for-character against the source text, computes gradual `DF-QuAD` belief scores (`C = 0.7125`), and ranks the weakest assumptions that collapse Ivan's conclusion (`C -> 0.0000`) if rejected:
 
 ```text
-argument-atlas/
-├── Cargo.toml                  # Rust workspace manifest
-├── crates/
-│   └── atlas-core/             # Core BAH model & symbolic solvers (Rust)
-│       ├── src/model.rs        # Hypergraph schema & deterministic span verifier
-│       ├── src/gradual.rs      # Hypergraph DF-QuAD continuous propagation solver
-│       ├── src/dung.rs         # ASPIC+/Dung reduction & Grounded/Preferred/Stable solver
-│       ├── src/knockout.rs     # Minimal premise knockout (hitting-set) search engine
-│       └── src/lib.rs          # Philosophical unit test suite (Descartes, Pollock, Kant)
-└── docs/
-    └── RESEARCH_LOG.md         # Living record of mathematical decisions & findings
+ #1  Remove ["E2"] | epistemic_cost=0.75 | [C]: 0.7125 -> 0.0000 (drop=0.7125)
+ #2  Remove ["E1"] | epistemic_cost=0.88 | [C]: 0.7125 -> 0.0000 (drop=0.7125)
 ```
 
 ---
 
-## Research Roadmap
+## How the pieces fit
 
-- [x] **Milestone 1 (Core Engine):** Bipolar Argumentation Hypergraph model, Hypergraph `DF-QuAD` gradual semantics solver, discrete Dung extension compiler (`Grounded`/`Preferred`/`Stable`), and Minimal Premise Knockout engine in Rust (`atlas-core` + `atlas-cli`).
-- [ ] **Milestone 2 (Benchmark & Interoperability):** Bidirectional `.argdown` $\leftrightarrow$ `ArgumentHypergraph` parser/exporter *(done)* and expanding the curated public-domain corpus (`datasets/phil-args`, currently `PhilArgs-6` with Descartes, Hume, Dostoevsky, Plato, Kant, Mill) toward `PhilArgs-50`.
-- [ ] **Milestone 3 (Neuro-Symbolic Extraction & Enthymeme Abduction):** Deterministic character-span grounder, Rust IPC bridge, `DeBERTa-v3` + `BGE` Abductive-NLI enthymeme scorer *(Unit 3.1 done)*, and multi-provider LLM extractor pipeline *(next)*.
-- [ ] **Milestone 4 (Hermeneutic Prism):** Hungarian bipartite semantic graph aligner & F1 evaluation harness (`BipartiteGraphAligner` over `BGE` embeddings, *core done*); multi-model divergence API & UI *(upcoming)*.
-- [ ] **Milestone 5 (Interactive Scientific Workbench):** Next.js + React Flow + `elkjs` layered hypergraph canvas powered by `atlas-core` compiled to WebAssembly for 60fps counterfactual credence manipulation.
+```mermaid
+flowchart LR
+    Text["Philosophy Text (.argdown or raw prose)"] --> LLM["Optional LLM Extractor (Groq / OpenAI / Anthropic / Ollama)"]
+    LLM --> Ground["Span Grounder (exact char offsets)"]
+    Ground --> NLI["DeBERTa-v3 NLI + BGE-small (scores hidden assumptions)"]
+    NLI --> Rust["Rust Solver: atlas-core (DF-QuAD, Dung extensions, knockouts)"]
+    Text --> Rust
+    Rust --> API["FastAPI Server & CLI"]
+```
+
+Most argument mapping tools treat arguments as simple arrows from one box to another and stop there. That breaks on philosophical texts for three concrete reasons:
+
+1. **Linked premises (`SupportHyperedge`).** In Descartes' Cogito, "I think" (`P1`) only reaches "I exist" (`C`) when paired with "Whatever thinks must exist" (`E1`). Modeling them as one conjunctive hyperedge `[P1] & [E1] +> [C]` guarantees that knocking out `E1` breaks the inference even when `P1` stays true.
+2. **Attacking a claim vs. attacking an arrow.** Following John Pollock (1987), a rebuttal (`->`) denies a proposition directly, while an undercutter (`_>`) breaks an inference hyperedge without claiming the conclusion is false. In [04_plato_euthyphro_dilemma.argdown](datasets/phil-args/04_plato_euthyphro_dilemma.argdown), Socrates undercuts Euthyphro's inference link (`H1` drops to `0.1191`).
+3. **NLI cheating filters (`AbductiveNLIScorer`).** When asked for hidden premises, language models often emit lazy tautologies like `"If P, then C"` or restate `C` directly. Our local `DeBERTa-v3` and `bge-small` scorer measures actual entailment gain (`delta_nli`) while penalizing circular paraphrases and trivial conditionals.
 
 ---
 
-## Author & License
+## Quick start
 
-Created and maintained by **Bunlong Prak (Nate)** ([@Bunlong-Prak](https://github.com/Bunlong-Prak)).  
-Released under the [MIT License](LICENSE).
+### 1. Run the Rust solver and CLI
+
+Requires Rust `1.75+` (tested on `rustc 1.96.0`).
+
+```bash
+git clone https://github.com/Bunlong-Prak/Philosophical-argument-atlas.git
+cd Philosophical-argument-atlas
+
+# Run the 8 Rust solver tests (DF-QuAD, Dung extensions, knockouts, Argdown round-trip)
+cargo test
+
+# Build release CLI and inspect Kant's Third Antinomy cycle
+cargo build --release -p atlas-cli
+./target/release/atlas-cli inspect datasets/phil-args/05_kant_third_antinomy.argdown --strict-spans
+```
+
+### 2. Run the Python ML suite and FastAPI server
+
+Requires [uv](https://docs.astral.sh/uv/) and Python `3.11` to `3.13`. Models are sized to fit inside 8 GB of RAM on Apple Silicon (`MoritzLaurer/DeBERTa-v3-base-mnli-fever-anli` and `BAAI/bge-small-en-v1.5`).
+
+```bash
+cd backend
+uv sync
+
+# Run unit tests (span alignment, Rust IPC, graph aligner, FastAPI endpoints)
+uv run pytest -v
+
+# Start the local FastAPI server on http://127.0.0.1:8000
+uv run uvicorn atlas_ml.api:app --reload
+```
+
+Optional research scripts (download Hugging Face weights on first run):
+
+```bash
+# Test NLI enthymeme ranking against circularity and tautologies on Descartes, Hume, Dostoevsky
+uv run python scripts/eval_enthymeme_ablation.py
+
+# Audit all 6 curated passages and run live BGE-small Hungarian graph alignment
+uv run python scripts/eval_corpus_and_aligner.py
+```
+
+---
+
+## What is inside
+
+| Path | Role |
+| :--- | :--- |
+| [crates/atlas-core](crates/atlas-core/src/lib.rs) | Rust Bipolar Hypergraph model, span verifier, `DF-QuAD` solver, Dung compiler, knockout search, and `.argdown` parser/exporter. |
+| [crates/atlas-cli](crates/atlas-cli/src/main.rs) | CLI binary supporting `inspect`, `solve --stdin`, and `convert`. |
+| [datasets/phil-args](datasets/phil-args) | Six public-domain philosophical passages (Descartes, Hume, Dostoevsky, Plato, Kant, Mill) with verified character spans. |
+| [backend/src/atlas_ml](backend/src/atlas_ml) | Span grounder, Rust IPC bridge, `DeBERTa-v3` NLI enthymeme scorer, Hungarian graph aligner, LLM extractor, and FastAPI app. |
+| [docs/GUIDE.md](docs/GUIDE.md) | ADHD-friendly visual walkthrough of the concepts, files, and API endpoints. |
+| [docs/RESEARCH_LOG.md](docs/RESEARCH_LOG.md) | Running lab notebook recording bugs found, math fixes, and empirical results. |
+
+---
+
+## Roadmap
+
+- [x] **Milestone 1 (Core Rust Engine):** Bipolar hypergraph model, `DF-QuAD` solver, Dung (`Grounded`, `Preferred`, `Stable`) compiler, Minimal Premise Knockout search, and `atlas-cli`.
+- [ ] **Milestone 2 (Benchmark Corpus):** Bidirectional `.argdown` bridge and 6 verified public-domain passages (`PhilArgs-6`); next target is expanding to `PhilArgs-50`.
+- [x] **Milestone 3 (Neuro-Symbolic Pipeline):** Deterministic span grounder, `DeBERTa-v3` NLI enthymeme scorer, multi-provider LLM JSON extractor (`Groq`, `OpenAI`, `Anthropic`, `Ollama`), and FastAPI service.
+- [ ] **Milestone 4 (Hermeneutic Prism):** Hungarian bipartite graph aligner over `BGE` embeddings is complete; multi-model consensus benchmarking across live LLMs is next.
+- [ ] **Milestone 5 (Interactive Workbench UI):** Next.js + React Flow layered hypergraph canvas with live credence sliders powered by `atlas-core` compiled to WebAssembly.
+
+---
+
+## Author and license
+
+Created by **Bunlong Prak (Nate)** ([@Bunlong-Prak](https://github.com/Bunlong-Prak)). Released under the [MIT License](LICENSE).

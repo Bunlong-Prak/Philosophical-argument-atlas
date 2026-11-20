@@ -101,6 +101,36 @@ class AtlasRustBridge:
 
         return SolverReport.model_validate_json(proc.stdout)
 
+    def solve_argdown(
+        self,
+        argdown_text: str,
+        strict_spans: bool = True,
+        threshold: float = 0.50,
+        t_norm: Literal["godel", "product"] = "godel",
+    ) -> SolverReport:
+        cmd = self._command_prefix() + [
+            "solve",
+            "--stdin",
+            "--threshold",
+            str(threshold),
+            "--t-norm",
+            t_norm,
+        ]
+        if strict_spans:
+            cmd.append("--strict-spans")
+
+        proc = subprocess.run(
+            cmd,
+            input=argdown_text,
+            text=True,
+            capture_output=True,
+            cwd=str(self.repo_root),
+            check=False,
+        )
+        if proc.returncode != 0:
+            raise RustBridgeError(proc.stderr.strip() or f"atlas-cli exited with {proc.returncode}")
+        return SolverReport.model_validate_json(proc.stdout)
+
     def load_argdown(self, argdown_path: Path) -> ArgumentHypergraph:
         cmd = self._command_prefix() + ["convert", str(argdown_path), "--to", "json"]
         proc = subprocess.run(

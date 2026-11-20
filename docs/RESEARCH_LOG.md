@@ -139,3 +139,24 @@ This document records all architectural decisions, mathematical formulations, em
 2. **Embedding-Space Inversion Between Implicit Enthymemes and Derived Conclusions (`eval_corpus_and_aligner.py`):**
    - *Observation:* On live `BAAI/bge-small-en-v1.5` embeddings of Plato's *Euthyphro*, pure cosine Hungarian matching swapped `alt_E1 <-> C` (`0.810`) and `alt_C <-> E1` (`0.887`, sum `1.697`) over the true diagonal `alt_E1 <-> E1` (`0.840`) and `alt_C <-> C` (`0.847`, sum `1.687`) because an unspoken enthymeme and its conclusion share identical domain nouns (*"gods"*, *"holy"*, *"loved"*). That `0.010` cosine swap caused `Rebuttal F1` and `Undercutter F1` to collapse from `1.0000` to `0.0000`!
    - *Fix:* Kept raw cosine threshold gating $\cos \ge \tau$, while adding a bounded epistemic-role tie-breaker (`+0.05` when matching explicit vs. implicit `Enthymeme` partition, `+0.02` when matching exact `NodeType`) inside the Hungarian objective. Re-running `eval_corpus_and_aligner.py` restored `Node F1 = 1.0000`, `Hyperedge F1 = 1.0000`, `Rebuttal F1 = 1.0000`, `Undercutter F1 = 1.0000`, `Consensus = 1.0000`.
+
+
+---
+
+## Milestone 3, Unit 3.2: Multi-Provider Neuro-Symbolic Pipeline, FastAPI Service, and Readable Documentation
+- **Date:** 2026-11-19
+- **Status:** Implemented & Verified (`8/8` Rust tests, `8/8` pytest including pipeline and FastAPI endpoint integration tests)
+
+### 1. Components Added
+1. **End-to-End Neuro-Symbolic Extractor ([backend/src/atlas_ml/extractor.py](file:///Users/mac/Projects/personal/Philosophy_in_AI/argument-atlas/backend/src/atlas_ml/extractor.py)):**
+   - Added `HttpLLMClient` using `httpx` with support for Groq, OpenAI, Anthropic, and local Ollama JSON outputs.
+   - `NeuroSymbolicPipeline.run` chains raw LLM JSON extraction through `DeterministicSpanGrounder` (re-aligning whitespace/smart-quote drift and dropping fabricated explicit quotes plus dangling edges), `AbductiveNLIScorer` (auditing extracted enthymemes for circularity and tautologies), and `AtlasRustBridge.solve` (strict span validation + `DF-QuAD` + `Dung` + minimal knockouts).
+2. **FastAPI Service ([backend/src/atlas_ml/api.py](file:///Users/mac/Projects/personal/Philosophy_in_AI/argument-atlas/backend/src/atlas_ml/api.py)) & `.argdown` IPC ([rust_bridge.py](file:///Users/mac/Projects/personal/Philosophy_in_AI/argument-atlas/backend/src/atlas_ml/rust_bridge.py)):**
+   - Added `solve_argdown` to `AtlasRustBridge` using `atlas-cli solve --stdin`.
+   - Exposed `/health`, `/passages`, `/passages/{passage_id}`, `/solve`, `/solve-argdown`, `/score-enthymemes`, `/align`, and `/extract` with lazy initialization for `DeBERTa-v3` and `BGE-small`.
+3. **Humanized, ADHD-Friendly Documentation ([README.md](file:///Users/mac/Projects/personal/Philosophy_in_AI/argument-atlas/README.md) & [docs/GUIDE.md](file:///Users/mac/Projects/personal/Philosophy_in_AI/argument-atlas/docs/GUIDE.md)):**
+   - Rewrote `README.md` to lead with a 30-second Dostoevsky example before formalism, and added `docs/GUIDE.md` with short visual examples for hyperedges, undercutters, antinomy cycles, and NLI anti-cheating checks.
+   - Applied `humanizer` and `academic-research-skills` quality checks across both docs (removed em/en dashes in prose, staged openers, "not X but Y" framing, and overused AI filler terms).
+
+### 2. Verification Scope
+- Added [backend/tests/test_pipeline_and_api.py](file:///Users/mac/Projects/personal/Philosophy_in_AI/argument-atlas/backend/tests/test_pipeline_and_api.py): verified `NeuroSymbolicPipeline` end-to-end with deterministic fake LLM/NLI stubs + real Rust solver (`FAKE` hallucination dropped, `P1` repaired, `E1` surfaced as #1 knockout) and verified all FastAPI endpoints via `TestClient` (including live slider perturbation on `kant-third-antinomy` and HTTP `503` guard when `GROQ_API_KEY` is unset).
