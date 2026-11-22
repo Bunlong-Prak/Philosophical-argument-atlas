@@ -173,6 +173,12 @@ def test_fastapi_endpoints_corpus_solve_and_align() -> None:
     assert aligned.status_code == 200
     assert aligned.json()["consensus_score"] == 1.0
 
+    # Parse raw .argdown offline into full hypergraph + solver report.
+    sample_argdown = kant_data["argdown"]
+    parsed_resp = client.post("/parse-argdown", json={"argdown": sample_argdown, "strict_spans": True})
+    assert parsed_resp.status_code == 200
+    assert parsed_resp.json()["passage_id"] == "kant-third-antinomy"
+
     # Cloud extract returns clean 503 when API key is missing.
     assert LLMConfig(provider="groq").resolved_model() == "llama-3.3-70b-versatile"
     extract_resp = client.post(

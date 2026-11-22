@@ -14,10 +14,11 @@ import type {
 } from "@/lib/types";
 
 type ActiveTab = "workbench" | "lab";
+const DEFAULT_PASSAGE_ID = "dostoevsky-ivan-rebellion";
 
 export default function WorkbenchPage() {
   const [passages, setPassages] = useState<PassageSummary[]>([]);
-  const [selectedId, setSelectedId] = useState<string>("dostoevsky-ivan-rebellion");
+  const [selectedId, setSelectedId] = useState<string>(DEFAULT_PASSAGE_ID);
   const [originalGraph, setOriginalGraph] = useState<ArgumentHypergraph | null>(null);
   const [graph, setGraph] = useState<ArgumentHypergraph | null>(null);
   const [report, setReport] = useState<SolverReport | null>(null);
@@ -45,7 +46,7 @@ export default function WorkbenchPage() {
       .then((list: PassageSummary[]) => {
         if (cancelled) return;
         setPassages(list);
-        if (list.length > 0 && !list.some((p) => p.passage_id === selectedId)) {
+        if (list.length > 0 && !list.some((p) => p.passage_id === DEFAULT_PASSAGE_ID)) {
           setSelectedId(list[0].passage_id);
         }
       })
@@ -354,11 +355,14 @@ export default function WorkbenchPage() {
         >
           {activeTab === "lab" && (
             <CustomLabPanel
-              onLoadExtractedGraph={(extractedGraph, extractedReport) => {
+              onLoadExtractedGraph={(extractedGraph, extractedReport, nextArgdown) => {
                 setOriginalGraph(extractedGraph);
                 setGraph(extractedGraph);
                 setReport(extractedReport);
-                setArgdownText("");
+                setArgdownText(nextArgdown ?? "");
+                setHoveredNodeId(null);
+                setSelectedNodeId(null);
+                setTNorm("godel");
                 setActiveTab("workbench");
               }}
             />

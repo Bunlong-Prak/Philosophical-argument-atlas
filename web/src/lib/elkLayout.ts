@@ -150,6 +150,10 @@ export function buildFlowElements(params: {
   }
 
   for (const e of graph.support_hyperedges) {
+    const hasVisiblePremise = e.premises.some((p) => visibleIds.has(p));
+    if (!showEnthymemes && (!hasVisiblePremise || !visibleIds.has(e.conclusion))) {
+      continue;
+    }
     const pos = positions[`gate:${e.id}`] ?? { x: 0, y: 0 };
     const tau = report.gradual_df_quad.hyperedge_transmission[e.id] ?? 0;
     const isSevered = tau <= 0.05;

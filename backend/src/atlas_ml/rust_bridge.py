@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import json
 import subprocess
+import tempfile
 from pathlib import Path
 from typing import Literal, Optional
 
@@ -143,6 +144,18 @@ class AtlasRustBridge:
         if proc.returncode != 0:
             raise RustBridgeError(proc.stderr.strip() or f"atlas-cli exited with {proc.returncode}")
         return ArgumentHypergraph.model_validate_json(proc.stdout)
+
+    def parse_argdown_text(self, argdown_text: str) -> ArgumentHypergraph:
+        """Parses raw `.argdown` text via a temporary file using `atlas-cli convert`."""
+        with tempfile.NamedTemporaryFile(
+            mode="w", suffix=".argdown", encoding="utf-8", delete=False
+        ) as tmp:
+            tmp.write(argdown_text)
+            tmp_path = Path(tmp.name)
+        try:
+            return self.load_argdown(tmp_path)
+        finally:
+            tmp_path.unlink(missing_ok=True)
 
     def inspect_file(self, path: Path, strict_spans: bool = True) -> SolverReport:
         cmd = self._command_prefix() + ["inspect", str(path), "--json"]

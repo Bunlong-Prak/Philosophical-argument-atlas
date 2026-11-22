@@ -8,6 +8,7 @@ import {
   Handle,
   Position,
   ReactFlow,
+  useReactFlow,
   type Edge,
   type Node,
   type NodeProps,
@@ -248,6 +249,26 @@ const nodeTypes = {
   inferenceGate: InferenceGateNode,
 };
 
+function FitViewOnLayout({
+  layoutVersion,
+  reduceMotion,
+}: {
+  layoutVersion: number;
+  reduceMotion: boolean;
+}) {
+  const { fitView } = useReactFlow();
+
+  useEffect(() => {
+    if (layoutVersion === 0) return;
+    const frame = requestAnimationFrame(() => {
+      fitView({ padding: 0.16, duration: reduceMotion ? 0 : 200 });
+    });
+    return () => cancelAnimationFrame(frame);
+  }, [layoutVersion, reduceMotion, fitView]);
+
+  return null;
+}
+
 export function HypergraphCanvas({
   graph,
   report,
@@ -259,6 +280,7 @@ export function HypergraphCanvas({
 }: HypergraphCanvasProps) {
   const topologyKey = useMemo(() => getTopologyKey(graph), [graph]);
   const [positions, setPositions] = useState<Record<string, { x: number; y: number }>>({});
+  const [layoutVersion, setLayoutVersion] = useState<number>(0);
   const lastLayoutKeyRef = useRef<string>("");
   const [reduceMotion, setReduceMotion] = useState<boolean>(false);
 
@@ -280,6 +302,7 @@ export function HypergraphCanvas({
       if (!cancelled) {
         lastLayoutKeyRef.current = topologyKey;
         setPositions(pos);
+        setLayoutVersion((v) => v + 1);
       }
     });
     return () => {
@@ -362,11 +385,14 @@ export function HypergraphCanvas({
         onNodeMouseLeave={handleNodeMouseLeave}
         onNodeClick={handleNodeClick}
         fitView
-        fitViewOptions={{ padding: 0.2 }}
+        fitViewOptions={{ padding: 0.16 }}
+        minZoom={0.28}
+        maxZoom={1.6}
         nodesDraggable={false}
         nodesConnectable={false}
         proOptions={{ hideAttribution: true }}
       >
+        <FitViewOnLayout layoutVersion={layoutVersion} reduceMotion={reduceMotion} />
         <Background variant={BackgroundVariant.Dots} gap={22} size={1.2} color="#cdc7b8" />
         <Controls showInteractive={false} />
       </ReactFlow>

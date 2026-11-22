@@ -1,16 +1,35 @@
 "use client";
 
 import React, { useState } from "react";
-import { Play, Sparkles } from "lucide-react";
+import { FileCode2, Play, Sparkles } from "lucide-react";
 import type {
   ArgumentHypergraph,
   EnthymemeScoreBreakdown,
+  PassageDetail,
   SolverReport,
 } from "@/lib/types";
 
 interface CustomLabPanelProps {
-  onLoadExtractedGraph: (graph: ArgumentHypergraph, report: SolverReport) => void;
+  onLoadExtractedGraph: (
+    graph: ArgumentHypergraph,
+    report: SolverReport,
+    argdownText?: string,
+  ) => void;
 }
+
+const DEFAULT_ARGDOWN_SAMPLE = `---
+passage_id: custom-syllogism
+source_text: "Every person possesses moral worth that no political utility may override. Therefore forced scapegoating remains unjust even when it placates a crowd."
+---
+
+# Propositions
+[P1]: Every person possesses moral worth that no political utility may override. {type: explicit_premise, credence: 0.9000, speaker: "Ethicist", span: 0..76, quote: "Every person possesses moral worth that no political utility may override."}
+[E1]: Treating an innocent person merely as a social instrument violates inviolable moral worth. {type: enthymeme, credence: 0.8500, speaker: "Implicit Principle"}
+[C]: Forced scapegoating remains unjust even when it placates a crowd. {type: thesis, credence: 0.0000, speaker: "Ethicist", span: 87..152, quote: "forced scapegoating remains unjust even when it placates a crowd."}
+
+# Support Hyperedges
+<H1>: [P1] & [E1] +> [C] {weight: 0.9500, scheme: modus_ponens}
+`;
 
 const NLI_PRESETS = [
   {
@@ -47,7 +66,9 @@ export function CustomLabPanel({ onLoadExtractedGraph }: CustomLabPanelProps) {
   const [nliLoading, setNliLoading] = useState(false);
   const [nliError, setNliError] = useState<string | null>(null);
 
-  // LLM Extraction state
+  // Graph Import state (.argdown offline solver or optional LLM extraction)
+  const [graphInputMode, setGraphInputMode] = useState<"argdown" | "llm">("argdown");
+  const [argdownScript, setArgdownScript] = useState(DEFAULT_ARGDOWN_SAMPLE);
   const [rawPassage, setRawPassage] = useState(
     "I think, therefore I am. Yet to assert an enduring thinking substance goes beyond immediate awareness.",
   );
@@ -91,11 +112,29 @@ export function CustomLabPanel({ onLoadExtractedGraph }: CustomLabPanelProps) {
     }
   }
 
-  async function handleExtract(e: React.FormEvent) {
+  async function handleLoadGraph(e: React.FormEvent) {
     e.preventDefault();
     setExtractError(null);
     setExtractLoading(true);
     try {
+      if (graphInputMode === "argdown") {
+        const resp = await fetch("/api/parse-argdown", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            argdown: argdownScript,
+            strict_spans: true,
+          }),
+        });
+        if (!resp.ok) {
+          const err = await resp.json().catch(() => ({ detail: resp.statusText }));
+          throw new Error(err.detail || "Failed to parse .argdown input");
+        }
+        const detail: PassageDetail = await resp.json();
+        onLoadExtractedGraph(detail.hypergraph, detail.report, detail.argdown);
+        return;
+      }
+
       const resp = await fetch("/api/extract", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -111,7 +150,7 @@ export function CustomLabPanel({ onLoadExtractedGraph }: CustomLabPanelProps) {
         throw new Error(err.detail || "Extraction failed");
       }
       const data = await resp.json();
-      onLoadExtractedGraph(data.hypergraph, data.solver_report);
+      onLoadExtractedGraph(data.hypergraph, data.solver_report, "");
     } catch (err) {
       setExtractError(err instanceof Error ? err.message : String(err));
     } finally {
@@ -332,7 +371,7 @@ export function CustomLabPanel({ onLoadExtractedGraph }: CustomLabPanelProps) {
           )}
         </section>
 
-        {/* Right: Optional LLM Extraction */}
+        {/* Right: Offline .argdown Parser or Optional LLM Extraction */}
         <section
           aria-labelledby="llm-extractor-heading"
           style={{
@@ -342,62 +381,147 @@ export function CustomLabPanel({ onLoadExtractedGraph }: CustomLabPanelProps) {
             padding: "1.25rem",
           }}
         >
-          <h2 id="llm-extractor-heading" style={{ margin: "0 0 0.5rem", fontSize: "1.05rem", fontWeight: 700 }}>
-            Extract Graph from Raw Text
-          </h2>
+          <div
+            style={{
+              display: "flex",
+              flexWrap: "wrap",
+              justifyContent: "space-between",
+              alignItems: "center",
+              gap: "0.5rem",
+              marginBlockEnd: "0.55rem",
+            }}
+          >
+            <h2 id="llm-extractor-heading" style={{ margin: 0, fontSize: "1.05rem", fontWeight: 700 }}>
+              Load Custom Argument Graph
+            </h2>
+            <div style={{ display: "flex", gap: "0.4rem" }}>
+              <button
+                type="button"
+                aria-pressed={graphInputMode === "argdown"}
+                onClick={() => {
+                  setGraphInputMode("argdown");
+                  setExtractError(null);
+                }}
+                style={{
+                  minBlockSize: "30px",
+                  padding: "0.2rem 0.6rem",
+                  borderRadius: "6px",
+                  border: `1px solid ${graphInputMode === "argdown" ? "var(--cobalt)" : "var(--rule-strong)"}`,
+                  background: graphInputMode === "argdown" ? "var(--cobalt-soft)" : "var(--paper-card)",
+                  color: graphInputMode === "argdown" ? "var(--cobalt)" : "var(--ink-secondary)",
+                  fontSize: "0.76rem",
+                  fontWeight: 600,
+                }}
+              >
+                .argdown (Offline)
+              </button>
+              <button
+                type="button"
+                aria-pressed={graphInputMode === "llm"}
+                onClick={() => {
+                  setGraphInputMode("llm");
+                  setExtractError(null);
+                }}
+                style={{
+                  minBlockSize: "30px",
+                  padding: "0.2rem 0.6rem",
+                  borderRadius: "6px",
+                  border: `1px solid ${graphInputMode === "llm" ? "var(--cobalt)" : "var(--rule-strong)"}`,
+                  background: graphInputMode === "llm" ? "var(--cobalt-soft)" : "var(--paper-card)",
+                  color: graphInputMode === "llm" ? "var(--cobalt)" : "var(--ink-secondary)",
+                  fontSize: "0.76rem",
+                  fontWeight: 600,
+                }}
+              >
+                Raw Text (LLM)
+              </button>
+            </div>
+          </div>
+
           <p style={{ margin: "0 0 1rem", fontSize: "0.85rem", color: "var(--ink-secondary)" }}>
-            Calls the configured LLM provider, verifies quotes verbatim against the source text,
-            audits hidden assumptions via NLI, and sends the graph to the Workbench canvas.
+            {graphInputMode === "argdown"
+              ? "Parse custom .argdown notation straight through the local Rust solver with zero API keys."
+              : "Calls your chosen LLM provider, verifies quotes verbatim against the text, and opens the solved graph."}
           </p>
 
-          <form onSubmit={handleExtract} style={{ display: "grid", gap: "0.8rem" }}>
-            <div>
-              <label
-                htmlFor="llm-provider"
-                style={{ display: "block", fontSize: "0.82rem", fontWeight: 600, marginBlockEnd: "0.25rem" }}
-              >
-                Provider
-              </label>
-              <select
-                id="llm-provider"
-                className="atlas-select"
-                value={provider}
-                onChange={(e) =>
-                  setProvider(e.target.value as "groq" | "openai" | "ollama" | "anthropic")
-                }
-                style={{ inlineSize: "100%" }}
-              >
-                <option value="groq">Groq (requires GROQ_API_KEY)</option>
-                <option value="openai">OpenAI (requires OPENAI_API_KEY)</option>
-                <option value="anthropic">Anthropic (requires ANTHROPIC_API_KEY)</option>
-                <option value="ollama">Local Ollama (http://localhost:11434)</option>
-              </select>
-            </div>
+          <form onSubmit={handleLoadGraph} style={{ display: "grid", gap: "0.8rem" }}>
+            {graphInputMode === "argdown" ? (
+              <div>
+                <label
+                  htmlFor="custom-argdown-script"
+                  style={{ display: "block", fontSize: "0.82rem", fontWeight: 600, marginBlockEnd: "0.25rem" }}
+                >
+                  Formal .argdown Specification
+                </label>
+                <textarea
+                  id="custom-argdown-script"
+                  rows={10}
+                  value={argdownScript}
+                  onChange={(e) => setArgdownScript(e.target.value)}
+                  style={{
+                    inlineSize: "100%",
+                    padding: "0.55rem",
+                    borderRadius: "6px",
+                    border: "1px solid var(--rule-strong)",
+                    background: "var(--paper-card)",
+                    fontFamily: "var(--font-data)",
+                    fontSize: "0.82rem",
+                    lineHeight: 1.45,
+                    resize: "vertical",
+                  }}
+                />
+              </div>
+            ) : (
+              <>
+                <div>
+                  <label
+                    htmlFor="llm-provider"
+                    style={{ display: "block", fontSize: "0.82rem", fontWeight: 600, marginBlockEnd: "0.25rem" }}
+                  >
+                    Provider
+                  </label>
+                  <select
+                    id="llm-provider"
+                    className="atlas-select"
+                    value={provider}
+                    onChange={(e) =>
+                      setProvider(e.target.value as "groq" | "openai" | "ollama" | "anthropic")
+                    }
+                    style={{ inlineSize: "100%" }}
+                  >
+                    <option value="groq">Groq (requires GROQ_API_KEY)</option>
+                    <option value="openai">OpenAI (requires OPENAI_API_KEY)</option>
+                    <option value="anthropic">Anthropic (requires ANTHROPIC_API_KEY)</option>
+                    <option value="ollama">Local Ollama (http://localhost:11434)</option>
+                  </select>
+                </div>
 
-            <div>
-              <label
-                htmlFor="llm-passage"
-                style={{ display: "block", fontSize: "0.82rem", fontWeight: 600, marginBlockEnd: "0.25rem" }}
-              >
-                Philosophical Passage
-              </label>
-              <textarea
-                id="llm-passage"
-                rows={6}
-                value={rawPassage}
-                onChange={(e) => setRawPassage(e.target.value)}
-                style={{
-                  inlineSize: "100%",
-                  padding: "0.55rem",
-                  borderRadius: "6px",
-                  border: "1px solid var(--rule-strong)",
-                  background: "var(--paper-card)",
-                  fontFamily: "var(--font-prose)",
-                  fontSize: "1rem",
-                  resize: "vertical",
-                }}
-              />
-            </div>
+                <div>
+                  <label
+                    htmlFor="llm-passage"
+                    style={{ display: "block", fontSize: "0.82rem", fontWeight: 600, marginBlockEnd: "0.25rem" }}
+                  >
+                    Philosophical Passage
+                  </label>
+                  <textarea
+                    id="llm-passage"
+                    rows={6}
+                    value={rawPassage}
+                    onChange={(e) => setRawPassage(e.target.value)}
+                    style={{
+                      inlineSize: "100%",
+                      padding: "0.55rem",
+                      borderRadius: "6px",
+                      border: "1px solid var(--rule-strong)",
+                      background: "var(--paper-card)",
+                      fontFamily: "var(--font-prose)",
+                      fontSize: "1rem",
+                      resize: "vertical",
+                    }}
+                  />
+                </div>
+              </>
+            )}
 
             <button
               type="submit"
@@ -416,8 +540,16 @@ export function CustomLabPanel({ onLoadExtractedGraph }: CustomLabPanelProps) {
                 fontWeight: 600,
               }}
             >
-              <Sparkles size={15} aria-hidden="true" />
-              {extractLoading ? "Extracting & Solving..." : "Extract & Open in Workbench"}
+              {graphInputMode === "argdown" ? (
+                <FileCode2 size={15} aria-hidden="true" />
+              ) : (
+                <Sparkles size={15} aria-hidden="true" />
+              )}
+              {extractLoading
+                ? "Solving..."
+                : graphInputMode === "argdown"
+                  ? "Parse & Open in Workbench"
+                  : "Extract & Open in Workbench"}
             </button>
           </form>
 

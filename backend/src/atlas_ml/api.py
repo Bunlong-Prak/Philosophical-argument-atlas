@@ -185,6 +185,27 @@ def create_app(
         except RustBridgeError as exc:
             raise HTTPException(status_code=422, detail=str(exc)) from exc
 
+    @app.post("/parse-argdown", response_model=PassageDetail)
+    def parse_argdown(req: SolveArgdownRequest) -> PassageDetail:
+        """Parses `.argdown` text into a hypergraph plus its initial Rust solver report."""
+        try:
+            graph = bridge.parse_argdown_text(req.argdown)
+            report = bridge.solve(
+                graph,
+                strict_spans=req.strict_spans and bool(graph.source_text),
+                threshold=req.threshold,
+                t_norm=req.t_norm,
+            )
+            return PassageDetail(
+                passage_id=graph.passage_id,
+                filename=f"{graph.passage_id}.argdown",
+                argdown=req.argdown,
+                hypergraph=graph,
+                report=report,
+            )
+        except RustBridgeError as exc:
+            raise HTTPException(status_code=422, detail=str(exc)) from exc
+
     @app.post("/score-enthymemes", response_model=list[EnthymemeScoreBreakdown])
     def score_enthymemes(req: EnthymemeScoreRequest) -> list[EnthymemeScoreBreakdown]:
         scorer = get_scorer()
