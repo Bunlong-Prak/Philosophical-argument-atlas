@@ -8,6 +8,7 @@ import {
   Handle,
   Position,
   ReactFlow,
+  useNodesInitialized,
   useReactFlow,
   type Edge,
   type Node,
@@ -249,22 +250,40 @@ const nodeTypes = {
   inferenceGate: InferenceGateNode,
 };
 
-function FitViewOnLayout({
-  layoutVersion,
+function CanvasResizeFit({
+  containerRef,
   reduceMotion,
 }: {
-  layoutVersion: number;
+  containerRef: React.RefObject<HTMLDivElement | null>;
   reduceMotion: boolean;
 }) {
   const { fitView } = useReactFlow();
+  const nodesInitialized = useNodesInitialized();
 
   useEffect(() => {
-    if (layoutVersion === 0) return;
+    if (!nodesInitialized) return;
     const frame = requestAnimationFrame(() => {
-      fitView({ padding: 0.16, duration: reduceMotion ? 0 : 200 });
+      fitView({ padding: 0.12, duration: reduceMotion ? 0 : 120 });
     });
     return () => cancelAnimationFrame(frame);
-  }, [layoutVersion, reduceMotion, fitView]);
+  }, [nodesInitialized, fitView, reduceMotion]);
+
+  useEffect(() => {
+    const el = containerRef.current;
+    if (!el || typeof ResizeObserver === "undefined") return;
+    let timer: ReturnType<typeof setTimeout> | null = null;
+    const obs = new ResizeObserver(() => {
+      if (timer) clearTimeout(timer);
+      timer = setTimeout(() => {
+        fitView({ padding: 0.12, duration: reduceMotion ? 0 : 120 });
+      }, 80);
+    });
+    obs.observe(el);
+    return () => {
+      if (timer) clearTimeout(timer);
+      obs.disconnect();
+    };
+  }, [containerRef, fitView, reduceMotion]);
 
   return null;
 }
@@ -279,9 +298,11 @@ export function HypergraphCanvas({
   onSelectNode,
 }: HypergraphCanvasProps) {
   const topologyKey = useMemo(() => getTopologyKey(graph), [graph]);
-  const [positions, setPositions] = useState<Record<string, { x: number; y: number }>>({});
-  const [layoutVersion, setLayoutVersion] = useState<number>(0);
-  const lastLayoutKeyRef = useRef<string>("");
+  const [layoutState, setLayoutState] = useState<{
+    key: string;
+    positions: Record<string, { x: number; y: number }>;
+  }>({ key: "", positions: {} });
+  const canvasWrapRef = useRef<HTMLDivElement | null>(null);
   const [reduceMotion, setReduceMotion] = useState<boolean>(false);
 
   useEffect(() => {
@@ -295,26 +316,30 @@ export function HypergraphCanvas({
 
   useEffect(() => {
     let cancelled = false;
-    if (lastLayoutKeyRef.current === topologyKey && Object.keys(positions).length > 0) {
+    if (layoutState.key === topologyKey && Object.keys(layoutState.positions).length > 0) {
       return;
     }
     computeLayeredPositions(graph).then((pos) => {
       if (!cancelled) {
-        lastLayoutKeyRef.current = topologyKey;
-        setPositions(pos);
-        setLayoutVersion((v) => v + 1);
+        setLayoutState({ key: topologyKey, positions: pos });
       }
     });
     return () => {
       cancelled = true;
     };
-  }, [graph, topologyKey, positions]);
+  }, [graph, topologyKey, layoutState.key, layoutState.positions]);
+
+  const isLayoutReady =
+    layoutState.key === topologyKey && Object.keys(layoutState.positions).length > 0;
 
   const { nodes, edges } = useMemo(() => {
+    if (!isLayoutReady) {
+      return { nodes: [] as Node[], edges: [] as Edge[] };
+    }
     const built = buildFlowElements({
       graph,
       report,
-      positions,
+      positions: layoutState.positions,
       showEnthymemes,
       activeNodeId,
       knockoutHighlightIds,
@@ -326,7 +351,16 @@ export function HypergraphCanvas({
       };
     }
     return built;
-  }, [graph, report, positions, showEnthymemes, activeNodeId, knockoutHighlightIds, reduceMotion]);
+  }, [
+    isLayoutReady,
+    graph,
+    report,
+    layoutState.positions,
+    showEnthymemes,
+    activeNodeId,
+    knockoutHighlightIds,
+    reduceMotion,
+  ]);
 
   const handleNodeMouseEnter = (_: React.MouseEvent, node: Node) => {
     if (node.id.startsWith("prop:")) {
@@ -348,54 +382,74 @@ export function HypergraphCanvas({
     <section className="pane-canvas" aria-label="Interactive Bipolar Argumentation Hypergraph">
       <div
         style={{
-          position: "absolute",
-          insetBlockStart: "12px",
-          insetInlineStart: "12px",
-          zIndex: 5,
           display: "flex",
           flexWrap: "wrap",
-          gap: "0.5rem",
-          padding: "0.4rem 0.65rem",
-          borderRadius: "8px",
-          border: "1px solid var(--rule-hairline)",
-          background: "rgba(250, 248, 244, 0.94)",
-          fontSize: "0.75rem",
+          alignItems: "center",
+          justifyContent: "space-between",
+          gap: "0.5rem 1rem",
+          padding: "0.45rem 0.9rem",
+          borderBlockEnd: "1px solid var(--rule-hairline)",
+          background: "var(--paper-reading)",
+          fontSize: "0.76rem",
           color: "var(--ink-secondary)",
+          flexShrink: 0,
         }}
       >
-        <span style={{ display: "inline-flex", alignItems: "center", gap: "0.3rem" }}>
-          <span style={{ inlineSize: 12, blockSize: 2, background: "#1d4ed8" }} /> Support
-        </span>
-        <span style={{ display: "inline-flex", alignItems: "center", gap: "0.3rem" }}>
-          <span
-            style={{ inlineSize: 12, blockSize: 0, borderBlockStart: "2px dashed #b45309" }}
-          />{" "}
-          Implicit / Undercuts
-        </span>
-        <span style={{ display: "inline-flex", alignItems: "center", gap: "0.3rem" }}>
-          <span style={{ inlineSize: 12, blockSize: 2, background: "#b91c1c" }} /> Rebuts
+        <div style={{ display: "flex", flexWrap: "wrap", gap: "0.9rem", alignItems: "center" }}>
+          <span style={{ display: "inline-flex", alignItems: "center", gap: "0.35rem" }}>
+            <span style={{ inlineSize: 14, blockSize: 2, background: "#1d4ed8" }} /> Support
+          </span>
+          <span style={{ display: "inline-flex", alignItems: "center", gap: "0.35rem" }}>
+            <span
+              style={{ inlineSize: 14, blockSize: 0, borderBlockStart: "2px dashed #b45309" }}
+            />
+            Enthymeme / Undercuts
+          </span>
+          <span style={{ display: "inline-flex", alignItems: "center", gap: "0.35rem" }}>
+            <span style={{ inlineSize: 14, blockSize: 2, background: "#b91c1c" }} /> Rebuts
+          </span>
+        </div>
+        <span style={{ color: "var(--ink-muted)", fontSize: "0.73rem" }}>
+          Hover or click any node to locate its span
         </span>
       </div>
 
-      <ReactFlow
-        nodes={nodes}
-        edges={edges}
-        nodeTypes={nodeTypes}
-        onNodeMouseEnter={handleNodeMouseEnter}
-        onNodeMouseLeave={handleNodeMouseLeave}
-        onNodeClick={handleNodeClick}
-        fitView
-        fitViewOptions={{ padding: 0.16 }}
-        minZoom={0.28}
-        maxZoom={1.6}
-        nodesDraggable={false}
-        nodesConnectable={false}
-        proOptions={{ hideAttribution: true }}
-      >
-        <FitViewOnLayout layoutVersion={layoutVersion} reduceMotion={reduceMotion} />
-        <Background variant={BackgroundVariant.Dots} gap={22} size={1.2} color="#cdc7b8" />
-        <Controls showInteractive={false} />
-      </ReactFlow>
+      <div ref={canvasWrapRef} style={{ position: "relative", flex: 1, minBlockSize: 0 }}>
+        {!isLayoutReady ? (
+          <div
+            style={{
+              display: "grid",
+              placeItems: "center",
+              blockSize: "100%",
+              color: "var(--ink-muted)",
+              fontSize: "0.88rem",
+            }}
+          >
+            Laying out bipolar hypergraph layers...
+          </div>
+        ) : (
+          <ReactFlow
+            key={topologyKey}
+            nodes={nodes}
+            edges={edges}
+            nodeTypes={nodeTypes}
+            onNodeMouseEnter={handleNodeMouseEnter}
+            onNodeMouseLeave={handleNodeMouseLeave}
+            onNodeClick={handleNodeClick}
+            fitView
+            fitViewOptions={{ padding: 0.18 }}
+            minZoom={0.22}
+            maxZoom={1.15}
+            nodesDraggable={false}
+            nodesConnectable={false}
+            proOptions={{ hideAttribution: true }}
+          >
+            <CanvasResizeFit containerRef={canvasWrapRef} reduceMotion={reduceMotion} />
+            <Background variant={BackgroundVariant.Dots} gap={22} size={1.2} color="#cdc7b8" />
+            <Controls showInteractive={false} />
+          </ReactFlow>
+        )}
+      </div>
     </section>
   );
 }

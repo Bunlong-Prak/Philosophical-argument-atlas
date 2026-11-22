@@ -64,7 +64,7 @@ export default function WorkbenchPage() {
   }, []);
 
   useEffect(() => {
-    if (!selectedId) return;
+    if (!selectedId || selectedId === "__custom__") return;
     let cancelled = false;
     setLoading(true);
     setErrorMsg(null);
@@ -225,6 +225,11 @@ export default function WorkbenchPage() {
                 setActiveTab("workbench");
               }}
             >
+              {selectedId === "__custom__" && graph && (
+                <option value="__custom__">
+                  Custom: {graph.passage_id} ({graph.nodes.length} nodes)
+                </option>
+              )}
               {passages.map((p) => (
                 <option key={p.passage_id} value={p.passage_id}>
                   {p.filename.replace(/\.argdown$/, "").replace(/_/g, " ")} ({p.node_count} nodes)
@@ -360,9 +365,12 @@ export default function WorkbenchPage() {
                 setGraph(extractedGraph);
                 setReport(extractedReport);
                 setArgdownText(nextArgdown ?? "");
+                setSelectedId("__custom__");
                 setHoveredNodeId(null);
                 setSelectedNodeId(null);
                 setTNorm("godel");
+                setErrorMsg(null);
+                setLoading(false);
                 setActiveTab("workbench");
               }}
             />

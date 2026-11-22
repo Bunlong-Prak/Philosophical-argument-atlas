@@ -23,9 +23,9 @@ source_text: "Every person possesses moral worth that no political utility may o
 ---
 
 # Propositions
-[P1]: Every person possesses moral worth that no political utility may override. {type: explicit_premise, credence: 0.9000, speaker: "Ethicist", span: 0..76, quote: "Every person possesses moral worth that no political utility may override."}
+[P1]: Every person possesses moral worth that no political utility may override. {type: explicit_premise, credence: 0.9000, speaker: "Ethicist", span: 0..74, quote: "Every person possesses moral worth that no political utility may override."}
 [E1]: Treating an innocent person merely as a social instrument violates inviolable moral worth. {type: enthymeme, credence: 0.8500, speaker: "Implicit Principle"}
-[C]: Forced scapegoating remains unjust even when it placates a crowd. {type: thesis, credence: 0.0000, speaker: "Ethicist", span: 87..152, quote: "forced scapegoating remains unjust even when it placates a crowd."}
+[C]: Forced scapegoating remains unjust even when it placates a crowd. {type: thesis, credence: 0.0000, speaker: "Ethicist", span: 85..150, quote: "forced scapegoating remains unjust even when it placates a crowd."}
 
 # Support Hyperedges
 <H1>: [P1] & [E1] +> [C] {weight: 0.9500, scheme: modus_ponens}

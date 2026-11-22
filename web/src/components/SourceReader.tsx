@@ -161,9 +161,10 @@ export function SourceReader({
             const node = seg.node;
             const isActive = activeNodeId === node.id;
             return (
-              <button
+              <span
                 key={`${node.id}-${i}`}
-                type="button"
+                role="button"
+                tabIndex={0}
                 className="span-highlight"
                 data-role={node.node_type}
                 data-active={isActive}
@@ -172,6 +173,13 @@ export function SourceReader({
                 onFocus={() => onHoverNode(node.id)}
                 onBlur={() => onHoverNode(null)}
                 onClick={() => onSelectNode(node.id)}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter" || e.key === " ") {
+                    e.preventDefault();
+                    onSelectNode(node.id);
+                  }
+                }}
+                aria-pressed={isActive}
                 aria-label={`Highlight proposition ${node.id}: ${node.proposition}`}
               >
                 {seg.text}
@@ -186,7 +194,7 @@ export function SourceReader({
                 >
                   [{node.id}]
                 </sup>
-              </button>
+              </span>
             );
           })}
         </p>

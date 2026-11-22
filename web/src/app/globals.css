@@ -214,9 +214,11 @@ button {
 .pane-canvas {
   grid-area: canvas;
   position: relative;
+  display: flex;
+  flex-direction: column;
   background: var(--paper-canvas);
   min-inline-size: 0;
-  min-block-size: 420px;
+  min-block-size: 460px;
 }
 
 .pane-inspector {
@@ -268,15 +270,13 @@ button {
 }
 
 .span-highlight {
-  border: 0;
-  background: transparent;
-  font: inherit;
-  text-align: start;
+  cursor: pointer;
   padding: 1px 3px;
   border-radius: 3px;
   display: inline;
-  line-height: inherit;
   border-block-end: 2px solid transparent;
+  box-decoration-break: clone;
+  -webkit-box-decoration-break: clone;
 }
 
 .span-highlight[data-role="thesis"] {
