@@ -83,7 +83,7 @@ function PropositionNodeCard({ data }: NodeProps<Node<PropFlowNodeData>>) {
     <div
       className="graph-node-card"
       style={{
-        inlineSize: "272px",
+        inlineSize: "276px",
         padding: "10px 12px",
         borderRadius: "8px",
         borderStyle: isEnthymeme ? "dashed" : "solid",
@@ -136,12 +136,8 @@ function PropositionNodeCard({ data }: NodeProps<Node<PropFlowNodeData>>) {
         style={{
           margin: "0 0 8px",
           fontSize: "12.5px",
-          lineHeight: 1.38,
+          lineHeight: 1.4,
           color: "var(--ink-primary)",
-          display: "-webkit-box",
-          WebkitLineClamp: 3,
-          WebkitBoxOrient: "vertical",
-          overflow: "hidden",
         }}
       >
         {node.proposition}
@@ -262,11 +258,11 @@ function CanvasResizeFit({
 
   useEffect(() => {
     if (!nodesInitialized) return;
-    const frame = requestAnimationFrame(() => {
-      fitView({ padding: 0.12, duration: reduceMotion ? 0 : 120 });
-    });
-    return () => cancelAnimationFrame(frame);
-  }, [nodesInitialized, fitView, reduceMotion]);
+    const timer = setTimeout(() => {
+      fitView({ padding: "6%", duration: 0 });
+    }, 30);
+    return () => clearTimeout(timer);
+  }, [nodesInitialized, fitView]);
 
   useEffect(() => {
     const el = containerRef.current;
@@ -275,8 +271,8 @@ function CanvasResizeFit({
     const obs = new ResizeObserver(() => {
       if (timer) clearTimeout(timer);
       timer = setTimeout(() => {
-        fitView({ padding: 0.12, duration: reduceMotion ? 0 : 120 });
-      }, 80);
+        fitView({ padding: "6%", duration: reduceMotion ? 0 : 100 });
+      }, 60);
     });
     obs.observe(el);
     return () => {
@@ -437,8 +433,8 @@ export function HypergraphCanvas({
             onNodeMouseLeave={handleNodeMouseLeave}
             onNodeClick={handleNodeClick}
             fitView
-            fitViewOptions={{ padding: 0.18 }}
-            minZoom={0.22}
+            fitViewOptions={{ padding: "6%" }}
+            minZoom={0.2}
             maxZoom={1.15}
             nodesDraggable={false}
             nodesConnectable={false}

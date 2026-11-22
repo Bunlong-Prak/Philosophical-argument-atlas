@@ -16,6 +16,17 @@ import type {
 type ActiveTab = "workbench" | "lab";
 const DEFAULT_PASSAGE_ID = "dostoevsky-ivan-rebellion";
 
+function formatPassageOption(filename: string, nodeCount: number): string {
+  const stem = filename.replace(/\.argdown$/, "").replace(/^\d+_/, "");
+  const parts = stem.split("_").filter(Boolean);
+  if (parts.length === 0) return `${filename} (${nodeCount} nodes)`;
+  const toTitle = (w: string) => w[0].toUpperCase() + w.slice(1);
+  const author = toTitle(parts[0]);
+  const subtitle = parts.slice(1).map(toTitle).join(" ");
+  const title = subtitle ? `${author}: ${subtitle}` : author;
+  return `${title} (${nodeCount} nodes)`;
+}
+
 export default function WorkbenchPage() {
   const [passages, setPassages] = useState<PassageSummary[]>([]);
   const [selectedId, setSelectedId] = useState<string>(DEFAULT_PASSAGE_ID);
@@ -232,7 +243,7 @@ export default function WorkbenchPage() {
               )}
               {passages.map((p) => (
                 <option key={p.passage_id} value={p.passage_id}>
-                  {p.filename.replace(/\.argdown$/, "").replace(/_/g, " ")} ({p.node_count} nodes)
+                  {formatPassageOption(p.filename, p.node_count)}
                 </option>
               ))}
             </select>

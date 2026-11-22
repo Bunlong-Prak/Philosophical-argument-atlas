@@ -45,6 +45,7 @@ flowchart LR
     NLI --> Rust["Rust Solver: atlas-core (DF-QuAD, Dung extensions, knockouts)"]
     Text --> Rust
     Rust --> API["FastAPI Server & CLI"]
+    API --> UI["Next.js Workbench (React Flow + ELK)"]
 ```
 
 Most argument mapping tools treat arguments as simple arrows from one box to another and stop there. That breaks on philosophical texts for three concrete reasons:
@@ -85,8 +86,20 @@ uv sync
 uv run pytest -v
 
 # Start the local FastAPI server on http://127.0.0.1:8000
-uv run uvicorn atlas_ml.api:app --reload
+uv run uvicorn atlas_ml.api:create_app --factory --reload --port 8000
 ```
+
+### 3. Launch the interactive Workbench UI (`web/`)
+
+Requires Node.js `18+`. Open a second terminal while FastAPI runs on port `8000`:
+
+```bash
+cd web
+npm install
+npm run dev
+```
+
+Open [http://localhost:3000](http://localhost:3000). You can switch between the 6 primary passages, trace colored prose quotes to hypergraph nodes, drag assumption sliders to watch downstream beliefs collapse, and parse your own `.argdown` scripts or test hidden assumptions in the **Custom Text & NLI Lab** tab.
 
 Optional research scripts (download Hugging Face weights on first run):
 
@@ -108,7 +121,9 @@ uv run python scripts/eval_corpus_and_aligner.py
 | [crates/atlas-cli](crates/atlas-cli/src/main.rs) | CLI binary supporting `inspect`, `solve --stdin`, and `convert`. |
 | [datasets/phil-args](datasets/phil-args) | Six public-domain philosophical passages (Descartes, Hume, Dostoevsky, Plato, Kant, Mill) with verified character spans. |
 | [backend/src/atlas_ml](backend/src/atlas_ml) | Span grounder, Rust IPC bridge, `DeBERTa-v3` NLI enthymeme scorer, Hungarian graph aligner, LLM extractor, and FastAPI app. |
-| [docs/GUIDE.md](docs/GUIDE.md) | ADHD-friendly visual walkthrough of the concepts, files, and API endpoints. |
+| [web/src](web/src) | Next.js 16 + React Flow + ELK interactive Workbench UI (split source reader, layered hypergraph canvas, live sliders, NLI & `.argdown` lab). |
+| [DESIGN.md](DESIGN.md) | Tokenized Critical-Edition Apparatus visual specification paired with `.impeccable/design.json`. |
+| [docs/GUIDE.md](docs/GUIDE.md) | ADHD-friendly visual walkthrough of the concepts, files, UI panes, and API endpoints. |
 | [docs/RESEARCH_LOG.md](docs/RESEARCH_LOG.md) | Running lab notebook recording bugs found, math fixes, and empirical results. |
 
 ---
@@ -119,7 +134,7 @@ uv run python scripts/eval_corpus_and_aligner.py
 - [ ] **Milestone 2 (Benchmark Corpus):** Bidirectional `.argdown` bridge and 6 verified public-domain passages (`PhilArgs-6`); next target is expanding to `PhilArgs-50`.
 - [x] **Milestone 3 (Neuro-Symbolic Pipeline):** Deterministic span grounder, `DeBERTa-v3` NLI enthymeme scorer, multi-provider LLM JSON extractor (`Groq`, `OpenAI`, `Anthropic`, `Ollama`), and FastAPI service.
 - [ ] **Milestone 4 (Hermeneutic Prism):** Hungarian bipartite graph aligner over `BGE` embeddings is complete; multi-model consensus benchmarking across live LLMs is next.
-- [ ] **Milestone 5 (Interactive Workbench UI):** Next.js + React Flow layered hypergraph canvas with live credence sliders powered by `atlas-core` compiled to WebAssembly.
+- [x] **Milestone 5 (Interactive Workbench UI):** Next.js split primary-text reader, ELK layered React Flow hypergraph canvas, live credence sliders with knockout testing, and offline `.argdown` + NLI lab backed by the local FastAPI + Rust engine.
 
 ---
 

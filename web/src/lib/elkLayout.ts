@@ -20,10 +20,14 @@ export interface GateFlowNodeData extends Record<string, unknown> {
   isUndercut: boolean;
 }
 
-const PROP_WIDTH = 272;
-const PROP_HEIGHT = 128;
-const GATE_WIDTH = 152;
+const PROP_WIDTH = 276;
+const GATE_WIDTH = 156;
 const GATE_HEIGHT = 44;
+
+function estimatePropHeight(proposition: string): number {
+  const lines = Math.max(2, Math.ceil(proposition.trim().length / 34));
+  return lines * 18 + 78;
+}
 
 export function getTopologyKey(graph: ArgumentHypergraph): string {
   const nKey = graph.nodes.map((n) => n.id).join(",");
@@ -44,7 +48,7 @@ export async function computeLayeredPositions(
     ...graph.nodes.map((n) => ({
       id: `prop:${n.id}`,
       width: PROP_WIDTH,
-      height: PROP_HEIGHT,
+      height: estimatePropHeight(n.proposition),
     })),
     ...graph.support_hyperedges.map((e) => ({
       id: `gate:${e.id}`,
@@ -191,12 +195,12 @@ export function buildFlowElements(params: {
         source: `prop:${p}`,
         target: `gate:${e.id}`,
         type: "smoothstep",
-        animated: !premiseCollapsed && !gateSevered && tau >= 0.5,
+        animated: false,
         style: {
           stroke,
-          strokeWidth: premiseCollapsed ? 1.5 : 2.2,
+          strokeWidth: premiseCollapsed ? 1.5 : 2.3,
           strokeDasharray: premiseCollapsed || isEnth ? "6 4" : undefined,
-          opacity: premiseCollapsed ? 0.55 : 0.92,
+          opacity: premiseCollapsed ? 0.55 : 0.94,
         },
         markerEnd: { type: MarkerType.ArrowClosed, color: stroke, width: 14, height: 14 },
       });
@@ -209,12 +213,12 @@ export function buildFlowElements(params: {
         source: `gate:${e.id}`,
         target: `prop:${e.conclusion}`,
         type: "smoothstep",
-        animated: !gateSevered && tau >= 0.5,
+        animated: false,
         style: {
           stroke,
           strokeWidth: gateSevered ? 1.5 : 2.6,
           strokeDasharray: gateSevered ? "6 4" : undefined,
-          opacity: gateSevered ? 0.55 : 0.95,
+          opacity: gateSevered ? 0.55 : 0.96,
         },
         markerEnd: { type: MarkerType.ArrowClosed, color: stroke, width: 16, height: 16 },
       });

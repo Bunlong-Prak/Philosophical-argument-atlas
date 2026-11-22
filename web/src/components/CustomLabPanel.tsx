@@ -163,7 +163,7 @@ export function CustomLabPanel({ onLoadExtractedGraph }: CustomLabPanelProps) {
       style={{
         overflowY: "auto",
         blockSize: "100%",
-        padding: "1.5rem",
+        padding: "clamp(0.85rem, 3vw, 1.5rem)",
         background: "var(--paper-canvas)",
       }}
     >
@@ -172,8 +172,8 @@ export function CustomLabPanel({ onLoadExtractedGraph }: CustomLabPanelProps) {
           maxInlineSize: "1180px",
           marginInline: "auto",
           display: "grid",
-          gridTemplateColumns: "repeat(auto-fit, minmax(360px, 1fr))",
-          gap: "1.5rem",
+          gridTemplateColumns: "repeat(auto-fit, minmax(min(100%, 340px), 1fr))",
+          gap: "1.25rem",
           alignItems: "start",
         }}
       >

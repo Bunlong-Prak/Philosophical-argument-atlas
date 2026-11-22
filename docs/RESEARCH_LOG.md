@@ -1,4 +1,4 @@
-# Argument Atlas — Living Research & Engineering Log
+# Argument Atlas: Living Research & Engineering Log
 
 This document records all architectural decisions, mathematical formulations, empirical findings, bug analyses, and open research questions across the development of **Argument Atlas**.
 
@@ -13,7 +13,7 @@ This document records all architectural decisions, mathematical formulations, em
 #### 1. Technical Decisions Recorded
 1. **Why Directed Hypergraphs Instead of Standard Graphs ($G = (V, E)$):**
    - In philosophical reasoning (e.g., Descartes' *Cogito* or Kant's *Antinomies*), an explicit premise $P_1$ ("I think") rarely entails conclusion $C$ ("I exist") in isolation. It requires an implicit premise (enthymeme) $E_1$ ("Whatever thinks must exist").
-   - If $P_1 \to C$ and $E_1 \to C$ are modeled as two independent edges in a standard graph, setting $\sigma_0(E_1) = 0$ leaves $P_1 \to C$ intact—which is logically false for linked (conjunctive) arguments.
+   - If $P_1 \to C$ and $E_1 \to C$ are modeled as two independent edges in a standard graph, setting $\sigma_0(E_1) = 0$ leaves $P_1 \to C$ intact, which is logically false for linked (conjunctive) arguments.
    - Modeling support via `SupportHyperedge` $e = (S, c, w_e)$ with T-norm conjunction ($\min_{p \in S} \sigma(p)$ or $\prod_{p \in S} \sigma(p)$) guarantees that rejecting an essential unspoken premise collapses the entire conjunctive inference warrant.
 2. **First-Class Pollock Undercutters (`UndercuttingAttack`):**
    - Following John Pollock (*Defeasible Reasoning*, 1987), we distinguish **rebutting defeaters** (which attack a proposition node $b \in \mathcal{A}$ directly and drive $\sigma^*(b)$ below its prior $\sigma_0(b)$) from **undercutting defeaters** (which attack a support hyperedge $e \in \mathcal{E}_{\text{sup}}$, driving $\tau(e) \to 0$ so the conclusion returns to its prior $\sigma_0(c)$ rather than being falsified).
@@ -44,7 +44,7 @@ This document records all architectural decisions, mathematical formulations, em
 #### 1. Technical Decisions Recorded
 1. **Inference-Gate Auxiliary Node Reduction (`compile_hypergraph_to_dung`):**
    - To evaluate Bipolar Argumentation Hypergraphs under classical discrete Dung semantics (`Grounded`, `Preferred`, `Stable`) without losing either conjunctive hyperedges or Pollock undercutters, each active proposition $a$ becomes `node:{id}`, each active support hyperedge $e = (S, c)$ becomes `edge:{id}`, and derived claims (`base_credence < 0.5 || NodeType::Thesis`) with incoming support receive a **Support-Deficiency Guard** `unwarranted:{id}` attacking `node:{id}` (which is in turn attacked by every incoming `edge:{e}`).
-   - Crucially, in a second pass over `attack_set`, every attacker $x$ of any premise `node:{p}` ($p \in S$)—including `unwarranted:{p}`—is propagated to attack `edge:{e}`. This guarantees transitive collapse across multi-hop support chains ($P_1 \xrightarrow{H_1} M_1 \xrightarrow{H_2} C$) whenever an upstream premise or inference gate is defeated, while still permitting reinstatement when a defender defeats an undercutter.
+   - In a second pass over `attack_set`, every attacker $x$ of any premise `node:{p}` ($p \in S$), including `unwarranted:{p}`, propagates forward to attack `edge:{e}`. This guarantees transitive collapse across multi-hop support chains ($P_1 \xrightarrow{H_1} M_1 \xrightarrow{H_2} C$) whenever an upstream premise or inference gate is defeated, while still permitting reinstatement when a defender defeats an undercutter.
 2. **Constraint-Propagated Labeling Search for Preferred & Stable Extensions (`dung.rs`):**
    - Instead of naive $2^{|A|}$ subset enumeration over compiled auxiliary arguments, `compute_preferred_extensions` runs a 5-state (`Blank`, `In`, `Out`, `MustOut`, `Blocked`) backtracking solver with grounded forced-inclusion propagation and immediate `MustOut` infeasibility pruning, then filters $\subseteq$-maximal admissible sets and checks the range criterion for stable extensions.
 3. **Inclusion-Minimal Premise Knockout Search (`knockout.rs`):**
@@ -160,3 +160,36 @@ This document records all architectural decisions, mathematical formulations, em
 
 ### 2. Verification Scope
 - Added [backend/tests/test_pipeline_and_api.py](file:///Users/mac/Projects/personal/Philosophy_in_AI/argument-atlas/backend/tests/test_pipeline_and_api.py): verified `NeuroSymbolicPipeline` end-to-end with deterministic fake LLM/NLI stubs + real Rust solver (`FAKE` hallucination dropped, `P1` repaired, `E1` surfaced as #1 knockout) and verified all FastAPI endpoints via `TestClient` (including live slider perturbation on `kant-third-antinomy` and HTTP `503` guard when `GROQ_API_KEY` is unset).
+
+---
+
+## Milestone 5, Unit 5.1: Interactive Next.js Workbench UI and Critical-Edition Apparatus
+- **Date:** 2026-11-21
+- **Status:** Implemented & Verified (`8/8` Rust tests, `8/8` pytest including `/parse-argdown`, `tsc --noEmit` + `next build` clean, `impeccable detect --json` `0` findings, Impeccable Finish Reviewer `disposition: ship`)
+
+### 1. Components Added
+1. **Next.js App Router Workbench ([web/src/app/page.tsx](file:///Users/mac/Projects/personal/Philosophy_in_AI/argument-atlas/web/src/app/page.tsx)) & Design Tokens ([web/src/app/globals.css](file:///Users/mac/Projects/personal/Philosophy_in_AI/argument-atlas/web/src/app/globals.css), [DESIGN.md](file:///Users/mac/Projects/personal/Philosophy_in_AI/argument-atlas/DESIGN.md)):**
+   - Implemented a 3-pane split workbench (`SourceReader`, `HypergraphCanvas`, `ApparatusInspector`) over a daylight archival paper palette (`#F7F5F0`, `#FAF8F4`, `#EEECE4`) pairing `Newsreader` serif prose, `IBM Plex Sans` controls, and `JetBrains Mono` tabular solver metrics.
+   - Configured Next.js `/api/*` rewrites in `web/next.config.ts` to proxy local FastAPI endpoints (`http://127.0.0.1:8000`).
+2. **Layered Bipolar Hypergraph & Credence Controls ([web/src/lib/elkLayout.ts](file:///Users/mac/Projects/personal/Philosophy_in_AI/argument-atlas/web/src/lib/elkLayout.ts), [HypergraphCanvas.tsx](file:///Users/mac/Projects/personal/Philosophy_in_AI/argument-atlas/web/src/components/HypergraphCanvas.tsx), [ApparatusInspector.tsx](file:///Users/mac/Projects/personal/Philosophy_in_AI/argument-atlas/web/src/components/ApparatusInspector.tsx)):**
+   - Wired `elkjs` layered UP placement + `@xyflow/react` custom nodes separating propositions (`PropositionNodeCard`) from conjunctive hyperedge gates (`InferenceGateNode`), encoding active support in solid cobalt, implicit enthymemes/undercutters in dashed sienna, direct rebuttals in crimson, and severed gates in muted dashed strokes.
+   - Added accessible native range sliders (`--slider-progress` using baseline `progress()` with `@supports not` `calc()` fallback), one-click **Test** buttons for `MinimalKnockout` hypotheses, `Gödel min` / `Product` T-norm switching, and Dung `Grounded`/`Preferred` extension readouts.
+3. **Offline `.argdown` Parse & NLI Custom Lab ([backend/src/atlas_ml/api.py](file:///Users/mac/Projects/personal/Philosophy_in_AI/argument-atlas/backend/src/atlas_ml/api.py), [CustomLabPanel.tsx](file:///Users/mac/Projects/personal/Philosophy_in_AI/argument-atlas/web/src/components/CustomLabPanel.tsx)):**
+   - Added `AtlasRustBridge.parse_argdown_text` + `POST /parse-argdown` so users without cloud LLM API keys can write or edit formal `.argdown` specifications offline and open solved graphs straight into the Workbench alongside the `DeBERTa-v3` Enthymeme Auditor and optional LLM extraction.
+
+### 2. Visual & Browser Bugs Caught and Resolved
+1. **Atomic `<button>` Breaking Inline Source Prose:**
+   - *Observation:* Rendering inline quote spans in `SourceReader` as `<button style="display: inline">` still forced rectangular inline-block line breaks in Chromium after *"And if"* in Dostoevsky's text.
+   - *Fix:* Switched `.span-highlight` elements to flow-inline `<span role="button" tabIndex={0}>` with `Enter`/`Space` keyboard handlers and `box-decoration-break: clone`, wrapping cleanly across lines without splitting sentences.
+2. **React Flow v13 `fitView` Numeric Padding Parsing (`0.16` Parsed as `0.16px`) & Edge Dash Collision:**
+   - *Observation:* Playwright bounding-box checks and Finish Reviewer screenshot inspection showed `fitView({ padding: 0.16 })` left only `1px` vertical margin (`maxNodeBottom: 901` inside `canvasBottom: 900`), while `animated: true` forced React Flow to draw solid Support edges dashed like Enthymemes and `-webkit-line-clamp: 3` clipped `[E1]`/`[E2]` propositions.
+   - *Fix:* Passed percentage padding (`padding: "6%"`) plus `ResizeObserver` + `useNodesInitialized` re-fit, removed `animated: true` on resting Support edges, removed line clamping paired with `estimatePropHeight` in ELK, moved the legend into its own non-overlapping canvas header strip, and added `.argdown` numeric prefix stripping (`Dostoevsky: Ivan Rebellion`).
+3. **Custom Lab Back-to-Corpus State Bug:**
+   - *Observation:* Playwright UI testing caught that opening a custom `.argdown` graph left `selectedId` equal to `"dostoevsky-ivan-rebellion"`, blocking re-selection of Dostoevsky in the header `<select>`.
+   - *Fix:* Set `selectedId` to `"__custom__"` when loading a custom graph from the lab and added a temporary `<option value="__custom__">` entry.
+
+### 3. Verification Scope
+- `cargo test`: `8 passed; 0 failed` (`atlas-core` solvers & round-trip).
+- `uv run pytest -v`: `8 passed` (including `POST /parse-argdown`, `/solve`, `/align`, and `/extract` 503 guard).
+- `cd web && npm run lint && npm run build`: `tsc --noEmit` and Next.js 16 production build passed cleanly.
+- Playwright end-to-end check on live Next.js + FastAPI (`1440x900` desktop, `390x844` workbench, `390x844` lab tab): confirmed `0` console/page/HTTP errors, `0` horizontal overflow on all three views, unclipped hypergraph bounds (`47px+` vertical clearance), live knockout + reset state propagation, and custom `.argdown` graph loading; Impeccable Finish Reviewer scored all 5 material fixes resolved (`disposition: ship`).

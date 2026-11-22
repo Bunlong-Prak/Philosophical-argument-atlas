@@ -1,0 +1,538 @@
+{
+  "schemaVersion": 2,
+  "generatedAt": "2026-11-22T04:56:22Z",
+  "title": "Design System: Argument Atlas",
+  "extensions": {
+    "colorMeta": {
+      "cobalt": {
+        "role": "primary",
+        "displayName": "Oxford Cobalt",
+        "canonical": "#1d4ed8",
+        "tonalRamp": [
+          "oklch(16.0% 0.055 264.4)",
+          "oklch(26.0% 0.110 264.4)",
+          "oklch(37.0% 0.165 264.4)",
+          "oklch(48.8% 0.217 264.4)",
+          "oklch(61.0% 0.180 264.4)",
+          "oklch(73.0% 0.130 264.4)",
+          "oklch(85.0% 0.075 264.4)",
+          "oklch(95.0% 0.020 264.4)"
+        ]
+      },
+      "cobalt-soft": {
+        "role": "primary",
+        "displayName": "Cobalt Wash",
+        "canonical": "#eff6ff",
+        "tonalRamp": [
+          "oklch(16.0% 0.015 254.6)",
+          "oklch(28.0% 0.025 254.6)",
+          "oklch(42.0% 0.032 254.6)",
+          "oklch(56.0% 0.035 254.6)",
+          "oklch(70.0% 0.030 254.6)",
+          "oklch(83.0% 0.024 254.6)",
+          "oklch(92.0% 0.018 254.6)",
+          "oklch(97.0% 0.014 254.6)"
+        ]
+      },
+      "cobalt-border": {
+        "role": "primary",
+        "displayName": "Cobalt Hairline",
+        "canonical": "#93c5fd",
+        "tonalRamp": [
+          "oklch(16.0% 0.035 251.8)",
+          "oklch(28.0% 0.060 251.8)",
+          "oklch(42.0% 0.085 251.8)",
+          "oklch(56.0% 0.105 251.8)",
+          "oklch(69.0% 0.105 251.8)",
+          "oklch(80.9% 0.096 251.8)",
+          "oklch(90.0% 0.055 251.8)",
+          "oklch(96.0% 0.020 251.8)"
+        ]
+      },
+      "sienna": {
+        "role": "secondary",
+        "displayName": "Burnt Sienna",
+        "canonical": "#b45309",
+        "tonalRamp": [
+          "oklch(16.0% 0.045 49.0)",
+          "oklch(28.0% 0.080 49.0)",
+          "oklch(42.0% 0.115 49.0)",
+          "oklch(55.5% 0.146 49.0)",
+          "oklch(67.0% 0.130 49.0)",
+          "oklch(78.0% 0.095 49.0)",
+          "oklch(88.0% 0.055 49.0)",
+          "oklch(95.5% 0.020 49.0)"
+        ]
+      },
+      "sienna-soft": {
+        "role": "secondary",
+        "displayName": "Sienna Cream",
+        "canonical": "#fffbeb",
+        "tonalRamp": [
+          "oklch(16.0% 0.018 95.3)",
+          "oklch(28.0% 0.026 95.3)",
+          "oklch(42.0% 0.034 95.3)",
+          "oklch(56.0% 0.036 95.3)",
+          "oklch(70.0% 0.032 95.3)",
+          "oklch(83.0% 0.028 95.3)",
+          "oklch(92.0% 0.024 95.3)",
+          "oklch(98.7% 0.021 95.3)"
+        ]
+      },
+      "sienna-border": {
+        "role": "secondary",
+        "displayName": "Sienna Border",
+        "canonical": "#fcd34d",
+        "tonalRamp": [
+          "oklch(16.0% 0.035 91.6)",
+          "oklch(28.0% 0.065 91.6)",
+          "oklch(42.0% 0.095 91.6)",
+          "oklch(58.0% 0.125 91.6)",
+          "oklch(74.0% 0.145 91.6)",
+          "oklch(87.9% 0.153 91.6)",
+          "oklch(93.0% 0.085 91.6)",
+          "oklch(97.0% 0.030 91.6)"
+        ]
+      },
+      "crimson": {
+        "role": "tertiary",
+        "displayName": "Archival Crimson",
+        "canonical": "#b91c1c",
+        "tonalRamp": [
+          "oklch(16.0% 0.055 27.5)",
+          "oklch(27.0% 0.105 27.5)",
+          "oklch(39.0% 0.150 27.5)",
+          "oklch(50.5% 0.190 27.5)",
+          "oklch(62.0% 0.165 27.5)",
+          "oklch(74.0% 0.120 27.5)",
+          "oklch(86.0% 0.065 27.5)",
+          "oklch(95.5% 0.020 27.5)"
+        ]
+      },
+      "crimson-soft": {
+        "role": "tertiary",
+        "displayName": "Crimson Tint",
+        "canonical": "#fef2f2",
+        "tonalRamp": [
+          "oklch(16.0% 0.015 17.4)",
+          "oklch(28.0% 0.022 17.4)",
+          "oklch(42.0% 0.028 17.4)",
+          "oklch(56.0% 0.030 17.4)",
+          "oklch(70.0% 0.026 17.4)",
+          "oklch(83.0% 0.022 17.4)",
+          "oklch(92.0% 0.016 17.4)",
+          "oklch(97.1% 0.013 17.4)"
+        ]
+      },
+      "crimson-border": {
+        "role": "tertiary",
+        "displayName": "Crimson Hairline",
+        "canonical": "#fca5a5",
+        "tonalRamp": [
+          "oklch(16.0% 0.035 19.6)",
+          "oklch(28.0% 0.065 19.6)",
+          "oklch(42.0% 0.095 19.6)",
+          "oklch(56.0% 0.115 19.6)",
+          "oklch(69.0% 0.112 19.6)",
+          "oklch(80.8% 0.103 19.6)",
+          "oklch(90.0% 0.055 19.6)",
+          "oklch(96.0% 0.020 19.6)"
+        ]
+      },
+      "forest": {
+        "role": "tertiary",
+        "displayName": "Forest Thesis",
+        "canonical": "#15803d",
+        "tonalRamp": [
+          "oklch(16.0% 0.045 150.1)",
+          "oklch(28.0% 0.075 150.1)",
+          "oklch(40.0% 0.110 150.1)",
+          "oklch(52.7% 0.137 150.1)",
+          "oklch(65.0% 0.120 150.1)",
+          "oklch(77.0% 0.085 150.1)",
+          "oklch(88.0% 0.050 150.1)",
+          "oklch(95.5% 0.018 150.1)"
+        ]
+      },
+      "forest-soft": {
+        "role": "tertiary",
+        "displayName": "Forest Mist",
+        "canonical": "#f0fdf4",
+        "tonalRamp": [
+          "oklch(16.0% 0.015 155.8)",
+          "oklch(28.0% 0.022 155.8)",
+          "oklch(42.0% 0.030 155.8)",
+          "oklch(56.0% 0.032 155.8)",
+          "oklch(70.0% 0.028 155.8)",
+          "oklch(83.0% 0.024 155.8)",
+          "oklch(92.0% 0.020 155.8)",
+          "oklch(98.2% 0.018 155.8)"
+        ]
+      },
+      "forest-border": {
+        "role": "tertiary",
+        "displayName": "Forest Hairline",
+        "canonical": "#86efac",
+        "tonalRamp": [
+          "oklch(16.0% 0.040 154.4)",
+          "oklch(28.0% 0.070 154.4)",
+          "oklch(42.0% 0.100 154.4)",
+          "oklch(58.0% 0.125 154.4)",
+          "oklch(73.0% 0.135 154.4)",
+          "oklch(87.1% 0.136 154.4)",
+          "oklch(93.0% 0.075 154.4)",
+          "oklch(96.5% 0.025 154.4)"
+        ]
+      },
+      "paper-canvas": {
+        "role": "neutral",
+        "displayName": "Archival Cotton Canvas",
+        "canonical": "#f7f5f0",
+        "tonalRamp": [
+          "oklch(16.0% 0.004 88.6)",
+          "oklch(28.0% 0.006 88.6)",
+          "oklch(42.0% 0.007 88.6)",
+          "oklch(56.0% 0.008 88.6)",
+          "oklch(70.0% 0.008 88.6)",
+          "oklch(83.0% 0.008 88.6)",
+          "oklch(91.0% 0.008 88.6)",
+          "oklch(97.0% 0.007 88.6)"
+        ]
+      },
+      "paper-reading": {
+        "role": "neutral",
+        "displayName": "Reading Sheet",
+        "canonical": "#faf8f4",
+        "tonalRamp": [
+          "oklch(16.0% 0.003 84.6)",
+          "oklch(28.0% 0.005 84.6)",
+          "oklch(42.0% 0.006 84.6)",
+          "oklch(56.0% 0.007 84.6)",
+          "oklch(70.0% 0.007 84.6)",
+          "oklch(83.0% 0.007 84.6)",
+          "oklch(92.0% 0.007 84.6)",
+          "oklch(98.0% 0.006 84.6)"
+        ]
+      },
+      "paper-rail": {
+        "role": "neutral",
+        "displayName": "Apparatus Rail",
+        "canonical": "#eeece4",
+        "tonalRamp": [
+          "oklch(16.0% 0.005 95.2)",
+          "oklch(28.0% 0.008 95.2)",
+          "oklch(42.0% 0.010 95.2)",
+          "oklch(56.0% 0.011 95.2)",
+          "oklch(70.0% 0.011 95.2)",
+          "oklch(82.0% 0.011 95.2)",
+          "oklch(94.2% 0.011 95.2)",
+          "oklch(97.0% 0.007 95.2)"
+        ]
+      },
+      "paper-card": {
+        "role": "neutral",
+        "displayName": "Elevated Paper Card",
+        "canonical": "#ffffff",
+        "tonalRamp": [
+          "oklch(15.0% 0.000 0.0)",
+          "oklch(27.0% 0.000 0.0)",
+          "oklch(40.0% 0.000 0.0)",
+          "oklch(54.0% 0.000 0.0)",
+          "oklch(68.0% 0.000 0.0)",
+          "oklch(82.0% 0.000 0.0)",
+          "oklch(92.0% 0.000 0.0)",
+          "oklch(100.0% 0.000 0.0)"
+        ]
+      },
+      "ink-primary": {
+        "role": "neutral",
+        "displayName": "Deep Charcoal Ink",
+        "canonical": "#1a1d24",
+        "tonalRamp": [
+          "oklch(15.0% 0.008 266.9)",
+          "oklch(23.1% 0.014 266.9)",
+          "oklch(35.0% 0.014 266.9)",
+          "oklch(48.0% 0.014 266.9)",
+          "oklch(62.0% 0.012 266.9)",
+          "oklch(76.0% 0.009 266.9)",
+          "oklch(88.0% 0.006 266.9)",
+          "oklch(96.0% 0.003 266.9)"
+        ]
+      },
+      "ink-secondary": {
+        "role": "neutral",
+        "displayName": "Graphite Secondary Ink",
+        "canonical": "#4a4640",
+        "tonalRamp": [
+          "oklch(16.0% 0.007 78.2)",
+          "oklch(28.0% 0.010 78.2)",
+          "oklch(39.6% 0.011 78.2)",
+          "oklch(52.0% 0.011 78.2)",
+          "oklch(65.0% 0.010 78.2)",
+          "oklch(78.0% 0.008 78.2)",
+          "oklch(89.0% 0.005 78.2)",
+          "oklch(96.0% 0.003 78.2)"
+        ]
+      },
+      "ink-muted": {
+        "role": "neutral",
+        "displayName": "Stone Muted Ink",
+        "canonical": "#6b655c",
+        "tonalRamp": [
+          "oklch(16.0% 0.008 78.2)",
+          "oklch(28.0% 0.012 78.2)",
+          "oklch(40.0% 0.015 78.2)",
+          "oklch(51.0% 0.016 78.2)",
+          "oklch(64.0% 0.014 78.2)",
+          "oklch(77.0% 0.011 78.2)",
+          "oklch(88.0% 0.007 78.2)",
+          "oklch(96.0% 0.004 78.2)"
+        ]
+      },
+      "rule-hairline": {
+        "role": "neutral",
+        "displayName": "Hairline Stone Rule",
+        "canonical": "#d8d3c6",
+        "tonalRamp": [
+          "oklch(16.0% 0.008 89.4)",
+          "oklch(28.0% 0.012 89.4)",
+          "oklch(42.0% 0.015 89.4)",
+          "oklch(56.0% 0.017 89.4)",
+          "oklch(70.0% 0.018 89.4)",
+          "oklch(86.7% 0.018 89.4)",
+          "oklch(92.0% 0.012 89.4)",
+          "oklch(96.5% 0.006 89.4)"
+        ]
+      },
+      "rule-strong": {
+        "role": "neutral",
+        "displayName": "Strong Stone Rule",
+        "canonical": "#b8b1a1",
+        "tonalRamp": [
+          "oklch(16.0% 0.010 87.2)",
+          "oklch(28.0% 0.016 87.2)",
+          "oklch(42.0% 0.020 87.2)",
+          "oklch(56.0% 0.023 87.2)",
+          "oklch(76.2% 0.024 87.2)",
+          "oklch(84.0% 0.018 87.2)",
+          "oklch(91.0% 0.012 87.2)",
+          "oklch(96.0% 0.005 87.2)"
+        ]
+      }
+    },
+    "typographyMeta": {
+      "headline": {
+        "displayName": "Headline",
+        "purpose": "Passage heading in SourceReader (h2#reader-heading)."
+      },
+      "title": {
+        "displayName": "Title",
+        "purpose": "Top apparatus brand title, Lab section titles, and inspector panel heading."
+      },
+      "prose": {
+        "displayName": "Scholarly Prose",
+        "purpose": "Primary philosophical source passage in Newsreader with 62ch measure."
+      },
+      "body": {
+        "displayName": "UI Body",
+        "purpose": "Standard interface text, form inputs, and proposition statements."
+      },
+      "label": {
+        "displayName": "Control Label",
+        "purpose": "Buttons, navigation tabs, field labels, and legend indicators."
+      },
+      "data": {
+        "displayName": "Tabular Data",
+        "purpose": "Live acceptability readouts, latency metrics, node IDs, and .argdown code."
+      }
+    },
+    "shadows": [
+      {
+        "name": "node-rest",
+        "value": "0 2px 6px rgba(26, 29, 36, 0.06)",
+        "purpose": "Subtle lift on React Flow proposition node cards at rest."
+      },
+      {
+        "name": "node-active",
+        "value": "0 6px 18px rgba(29, 78, 216, 0.16)",
+        "purpose": "Cobalt-tinted elevation on hovered or selected proposition nodes."
+      },
+      {
+        "name": "node-knockout",
+        "value": "0 4px 14px rgba(185, 28, 28, 0.2)",
+        "purpose": "Crimson highlight shadow on nodes in the minimal knockout set."
+      },
+      {
+        "name": "gate-rest",
+        "value": "0 1px 4px rgba(26, 29, 36, 0.07)",
+        "purpose": "Restrained grounding shadow on capsule-shaped inference gates."
+      },
+      {
+        "name": "controls-float",
+        "value": "0 2px 8px rgba(26, 29, 36, 0.08)",
+        "purpose": "Floating elevation on React Flow zoom and fit-view controls."
+      },
+      {
+        "name": "slider-thumb",
+        "value": "0 1px 3px rgba(26, 29, 36, 0.25)",
+        "purpose": "Tactile separation for the circular WebKit credence slider thumb."
+      }
+    ],
+    "motion": [
+      {
+        "name": "transition-node-state",
+        "value": "180ms ease-out",
+        "purpose": "Transitions opacity, border-color, background-color, and box-shadow on graph nodes, gates, and prose spans under prefers-reduced-motion: no-preference."
+      },
+      {
+        "name": "transition-acceptability-fill",
+        "value": "200ms ease-out",
+        "purpose": "Animates acceptability bar inline-size (200ms) and color (180ms) during live solver updates under prefers-reduced-motion: no-preference."
+      },
+      {
+        "name": "fitview-resize",
+        "value": "100ms",
+        "purpose": "React Flow ResizeObserver fitView duration; drops to 0ms when prefers-reduced-motion: reduce."
+      }
+    ],
+    "breakpoints": [
+      {
+        "name": "workbench-stack",
+        "value": "1120px"
+      }
+    ]
+  },
+  "components": [
+    {
+      "name": "Primary Button",
+      "kind": "button",
+      "refersTo": "button-primary",
+      "description": "Primary cobalt submit button used in Custom Text and NLI Lab forms.",
+      "html": "<button type=\"button\" class=\"ds-btn-primary\"><svg width=\"15\" height=\"15\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\"><polygon points=\"6 3 20 12 6 21 6 3\"/></svg>Score Candidates</button>",
+      "css": ".ds-btn-primary { display: inline-flex; align-items: center; justify-content: center; gap: 0.4rem; min-block-size: 40px; padding: 0.5rem 1rem; border-radius: 6px; border: 1px solid var(--cobalt, #1d4ed8); background: var(--cobalt, #1d4ed8); color: #ffffff; font-family: var(--font-ui, \"IBM Plex Sans\", sans-serif); font-size: 0.9rem; font-weight: 600; cursor: pointer; } .ds-btn-primary:hover { filter: brightness(0.94); } .ds-btn-primary:focus-visible { outline: 3px solid var(--cobalt, #1d4ed8); outline-offset: 2px; }"
+    },
+    {
+      "name": "Secondary Reset Button",
+      "kind": "button",
+      "refersTo": "button-secondary",
+      "description": "Compact secondary button used for Reset and preset selectors.",
+      "html": "<button type=\"button\" class=\"ds-btn-secondary\"><svg width=\"13\" height=\"13\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\"><path d=\"M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8\"/><path d=\"M3 3v5h5\"/></svg>Reset</button>",
+      "css": ".ds-btn-secondary { display: inline-flex; align-items: center; gap: 0.35rem; min-block-size: 32px; padding: 0.25rem 0.65rem; border-radius: 6px; border: 1px solid var(--rule-strong, #b8b1a1); background: var(--paper-card, #ffffff); color: var(--ink-primary, #1a1d24); font-family: var(--font-ui, \"IBM Plex Sans\", sans-serif); font-size: 0.8rem; font-weight: 600; cursor: pointer; } .ds-btn-secondary:hover { background: var(--paper-reading, #faf8f4); } .ds-btn-secondary:focus-visible { outline: 3px solid var(--cobalt, #1d4ed8); outline-offset: 2px; }"
+    },
+    {
+      "name": "Enthymeme Toggle Button",
+      "kind": "button",
+      "refersTo": "button-toggle-sienna",
+      "description": "Pressed toggle revealing or hiding implicit assumptions in burnt sienna.",
+      "html": "<button type=\"button\" class=\"ds-btn-sienna\" aria-pressed=\"true\"><svg width=\"14\" height=\"14\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\"><path d=\"M2.062 12.348a1 1 0 0 1 0-.696 10.75 10.75 0 0 1 19.876 0 1 1 0 0 1 0 .696 10.75 10.75 0 0 1-19.876 0\"/><circle cx=\"12\" cy=\"12\" r=\"3\"/></svg>Enthymemes Visible</button>",
+      "css": ".ds-btn-sienna { display: inline-flex; align-items: center; gap: 0.4rem; min-block-size: 34px; padding: 0.3rem 0.7rem; border-radius: 6px; border: 1px solid var(--sienna, #b45309); background: var(--sienna-soft, #fffbeb); color: var(--sienna, #b45309); font-family: var(--font-ui, \"IBM Plex Sans\", sans-serif); font-size: 0.82rem; font-weight: 600; cursor: pointer; } .ds-btn-sienna:hover { filter: brightness(0.97); } .ds-btn-sienna:focus-visible { outline: 3px solid var(--cobalt, #1d4ed8); outline-offset: 2px; }"
+    },
+    {
+      "name": "Test Knockout Button",
+      "kind": "button",
+      "refersTo": "button-knockout",
+      "description": "Compact crimson action button inside Minimal Knockouts rows.",
+      "html": "<button type=\"button\" class=\"ds-btn-knockout\"><svg width=\"12\" height=\"12\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\"><path d=\"M4 14a1 1 0 0 1-.78-1.63l9.9-10.2a.5.5 0 0 1 .86.46l-1.92 6.02A1 1 0 0 0 13 10h7a1 1 0 0 1 .78 1.63l-9.9 10.2a.5.5 0 0 1-.86-.46l1.92-6.02A1 1 0 0 0 11 14z\"/></svg>Test</button>",
+      "css": ".ds-btn-knockout { display: inline-flex; align-items: center; gap: 0.25rem; min-block-size: 30px; padding: 0.2rem 0.55rem; border-radius: 6px; border: 1px solid var(--crimson, #b91c1c); background: var(--paper-card, #ffffff); color: var(--crimson, #b91c1c); font-family: var(--font-ui, \"IBM Plex Sans\", sans-serif); font-size: 0.75rem; font-weight: 600; cursor: pointer; } .ds-btn-knockout:hover { background: var(--crimson-soft, #fef2f2); } .ds-btn-knockout:focus-visible { outline: 3px solid var(--cobalt, #1d4ed8); outline-offset: 2px; }"
+    },
+    {
+      "name": "Passage Select",
+      "kind": "input",
+      "refersTo": "input-field",
+      "description": "Native select control for philosophical passages and conjunction T-norms.",
+      "html": "<select class=\"ds-select\" aria-label=\"Passage\"><option>Dostoevsky: Ivan Rebellion (6 nodes)</option><option>Descartes: Cogito (5 nodes)</option></select>",
+      "css": ".ds-select { min-block-size: 36px; padding: 0.35rem 0.75rem; border: 1px solid var(--rule-strong, #b8b1a1); border-radius: 6px; background: var(--paper-card, #ffffff); color: var(--ink-primary, #1a1d24); font-family: var(--font-ui, \"IBM Plex Sans\", sans-serif); font-size: 0.9rem; font-weight: 500; } .ds-select:focus-visible { outline: 3px solid var(--cobalt, #1d4ed8); outline-offset: 2px; }"
+    },
+    {
+      "name": "Credence Range Slider",
+      "kind": "input",
+      "refersTo": "input-field",
+      "description": "Semantic range input controlling premise, enthymeme, or objection base credence.",
+      "html": "<input type=\"range\" min=\"0\" max=\"1\" step=\"0.05\" value=\"0.88\" class=\"ds-slider\" aria-label=\"Enthymeme E1 credence\" />",
+      "css": ".ds-slider { appearance: none; inline-size: 100%; block-size: 2.25rem; margin: 0; border: 0; background: transparent; cursor: pointer; } .ds-slider::-webkit-slider-runnable-track { block-size: 0.45rem; border-radius: 999px; background: linear-gradient(to right, var(--sienna, #b45309) 88%, #d6d0c4 88%); } .ds-slider::-webkit-slider-thumb { -webkit-appearance: none; appearance: none; inline-size: 1.15rem; block-size: 1.15rem; margin-block-start: -0.35rem; border: 2px solid #ffffff; border-radius: 50%; background: var(--sienna, #b45309); box-shadow: 0 1px 3px rgba(26, 29, 36, 0.25); } .ds-slider:focus-visible { outline: 3px solid var(--sienna, #b45309); outline-offset: 2px; border-radius: 6px; }"
+    },
+    {
+      "name": "Dialectical Mode Tabs",
+      "kind": "nav",
+      "refersTo": "tab-item-active",
+      "description": "Header tablist pairing cobalt ink with a 3px underline on the active view.",
+      "html": "<div class=\"ds-tablist\" role=\"tablist\"><button type=\"button\" role=\"tab\" aria-selected=\"true\" class=\"ds-tab\">Dialectical Workbench</button><button type=\"button\" role=\"tab\" aria-selected=\"false\" class=\"ds-tab\">Custom Text &amp; NLI Lab</button></div>",
+      "css": ".ds-tablist { display: flex; align-items: stretch; gap: 0.25rem; border-block-end: 1px solid var(--rule-hairline, #d8d3c6); background: var(--paper-rail, #eeece4); padding-inline: 0.5rem; } .ds-tab { position: relative; min-block-size: 38px; padding: 0.4rem 0.9rem; border: 0; border-radius: 6px 6px 0 0; background: transparent; color: var(--ink-secondary, #4a4640); font-family: var(--font-ui, \"IBM Plex Sans\", sans-serif); font-size: 0.9rem; font-weight: 500; cursor: pointer; } .ds-tab:hover { color: var(--ink-primary, #1a1d24); background: rgba(26, 29, 36, 0.04); } .ds-tab[aria-selected=\"true\"] { color: var(--cobalt, #1d4ed8); font-weight: 600; } .ds-tab[aria-selected=\"true\"]::after { content: \"\"; position: absolute; inset: auto 0 0; border-block-end: 3px solid var(--cobalt, #1d4ed8); } .ds-tab:focus-visible { outline: 3px solid var(--cobalt, #1d4ed8); outline-offset: 2px; }"
+    },
+    {
+      "name": "Solver Latency Pill",
+      "kind": "chip",
+      "refersTo": "latency-pill",
+      "description": "Tabular monospace pill reporting live Rust solver latency.",
+      "html": "<span class=\"ds-latency-pill\"><svg width=\"13\" height=\"13\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"#1d4ed8\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\"><path d=\"M22 12h-2.48a2 2 0 0 0-1.93 1.46l-2.35 8.36a.25.25 0 0 1-.48 0L9.24 2.18a.25.25 0 0 0-.48 0l-2.35 8.36A2 2 0 0 1 4.49 12H2\"/></svg>Rust solver: 326 &mu;s</span>",
+      "css": ".ds-latency-pill { display: inline-flex; align-items: center; gap: 0.35rem; padding: 0.25rem 0.6rem; border-radius: 999px; border: 1px solid var(--rule-hairline, #d8d3c6); background: var(--paper-reading, #faf8f4); color: var(--ink-secondary, #4a4640); font-family: var(--font-data, \"JetBrains Mono\", monospace); font-variant-numeric: tabular-nums; font-size: 0.82rem; }"
+    },
+    {
+      "name": "Proposition Node Card",
+      "kind": "card",
+      "refersTo": "proposition-card",
+      "description": "Hypergraph proposition card displaying role label, Dung badge, speaker, score, and acceptability meter.",
+      "html": "<div class=\"ds-prop-card\"><div class=\"ds-prop-head\"><span class=\"ds-prop-id\">[P2] Explicit Premise</span><span class=\"ds-dung-in\">IN</span></div><p class=\"ds-prop-text\">Ultimate truth and eschatological harmony are morally unworthy of being purchased at the price of innocent children suffering.</p><div class=\"ds-prop-foot\"><span>Ivan Karamazov</span><span class=\"ds-prop-score\">&sigma;* = 0.836</span></div><div class=\"ds-meter\"><div class=\"ds-meter-fill\"></div></div></div>",
+      "css": ".ds-prop-card { inline-size: 276px; padding: 10px 12px; border-radius: 8px; border: 1.5px solid #c8c2b4; background: var(--paper-card, #ffffff); font-family: var(--font-ui, \"IBM Plex Sans\", sans-serif); box-shadow: 0 2px 6px rgba(26, 29, 36, 0.06); transition: border-color 180ms ease-out, box-shadow 180ms ease-out; } .ds-prop-card:hover { border-color: var(--cobalt, #1d4ed8); box-shadow: 0 6px 18px rgba(29, 78, 216, 0.16); } .ds-prop-head { display: flex; align-items: center; justify-content: space-between; margin-block-end: 4px; font-size: 11px; } .ds-prop-id { font-family: var(--font-data, \"JetBrains Mono\", monospace); font-variant-numeric: tabular-nums; font-weight: 700; color: var(--cobalt, #1d4ed8); } .ds-dung-in { padding: 1px 6px; border-radius: 999px; background: #dcfce7; color: #166534; font-weight: 600; font-size: 10px; text-transform: uppercase; } .ds-prop-text { margin: 0 0 8px; font-size: 12.5px; line-height: 1.4; color: var(--ink-primary, #1a1d24); } .ds-prop-foot { display: flex; justify-content: space-between; font-size: 11px; color: var(--ink-secondary, #4a4640); margin-block-end: 3px; } .ds-prop-score { font-family: var(--font-data, \"JetBrains Mono\", monospace); font-variant-numeric: tabular-nums; font-weight: 700; color: var(--cobalt, #1d4ed8); } .ds-meter { block-size: 4px; border-radius: 999px; background: #e5e0d5; overflow: hidden; } .ds-meter-fill { block-size: 100%; inline-size: 84%; background: var(--cobalt, #1d4ed8); }"
+    },
+    {
+      "name": "Inference Gate Pill",
+      "kind": "custom",
+      "refersTo": "inference-gate",
+      "description": "Capsule node representing a conjunctive support hyperedge and its transmission ratio.",
+      "html": "<div class=\"ds-gate-pill\"><span class=\"ds-gate-id\">&lt;H2&gt; &tau;=0.77</span><span class=\"ds-gate-scheme\">Modus Ponens</span></div>",
+      "css": ".ds-gate-pill { inline-size: 152px; min-block-size: 44px; padding: 5px 10px; border-radius: 999px; border: 1.5px solid var(--cobalt, #1d4ed8); background: var(--cobalt-soft, #eff6ff); color: #1e40af; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; box-shadow: 0 1px 4px rgba(26, 29, 36, 0.07); } .ds-gate-id { font-family: var(--font-data, \"JetBrains Mono\", monospace); font-variant-numeric: tabular-nums; font-size: 11px; font-weight: 700; } .ds-gate-scheme { font-family: var(--font-ui, \"IBM Plex Sans\", sans-serif); font-size: 10px; opacity: 0.85; }"
+    }
+  ],
+  "narrative": {
+    "northStar": "Critical-Edition Apparatus",
+    "overview": "Argument Atlas is built as a calm daylight scholarly workbench that places primary philosophical text beside a live formal hypergraph engine. Instead of treating formal reasoning as a dark sci-fi node-cockpit or a generic gray SaaS dashboard, the visual system models the tactile clarity of a printed critical edition: warm cotton-paper surfaces, crisp charcoal ink, hairline rules, and high-contrast dialectical accents.\n\nThree warm paper values separate structural regions without heavy drop shadows: a muted cotton canvas (`#f7f5f0`) anchors the middle graph stage and Lab workspace, a brighter reading sheet (`#faf8f4`) holds primary philosophical prose and inspector sub-cards, and a quiet apparatus rail (`#eeece4`) frames the top bar and right assumption inspector. Across every pane, color encodes logical role consistently rather than acting as decorative ornament.\n\nInteractive behavior centers on synchronized inspection and live collapse feedback. Hovering or selecting a claim illuminates its verbatim source span, graph card, and credence slider together, while lowering premise credence dims collapsed nodes (`<= 0.08` acceptability) and turns severed hyperedge gates (`<= 0.05` transmission) dashed in step with the Rust `DF-QuAD` solver.",
+    "keyCharacteristics": [
+      "Warm three-surface cotton paper palette (`#f7f5f0`, `#faf8f4`, `#eeece4`) divided by `1px` stone hairline rules (`#d8d3c6`).",
+      "Tri-font editorial hierarchy pairing Newsreader serif for philosophical prose with IBM Plex Sans for controls and tabular JetBrains Mono for formal scores.",
+      "Synchronized dialectical ink system across source highlights, ELK hypergraph geometry, and native range sliders.",
+      "Structural state redundancy using dashed borders, `3px` active tab rules, and `2px` underline bars alongside semantic color shifts.",
+      "Motion strictly tied to solver and hover state (`180ms` to `200ms` ease-out) and suppressed under `prefers-reduced-motion`."
+    ],
+    "rules": [
+      {
+        "name": "The Tri-Surface Paper Rule",
+        "body": "Assign `#f7f5f0` only to open spatial canvas grounds, `#faf8f4` to reading prose and nested cards, and `#eeece4` to persistent apparatus chrome so regions separate cleanly without heavy framing.",
+        "section": "colors"
+      },
+      {
+        "name": "The Dialectical Ink Rule",
+        "body": "Reserve Oxford cobalt (`#1d4ed8`) for explicit support and primary controls, burnt sienna (`#b45309`) strictly for implicit assumptions and undercutters, and archival crimson (`#b91c1c`) strictly for rebuttals, collapses, and errors. Never swap semantic inks for decorative badges.",
+        "section": "colors"
+      },
+      {
+        "name": "The Two-Voice Type Rule",
+        "body": "Keep `Newsreader` dedicated to primary philosophical passages and passage input, and keep `IBM Plex Sans` on all apparatus headings and controls so commentary never blurs into source text.",
+        "section": "typography"
+      },
+      {
+        "name": "The Tabular Numerals Rule",
+        "body": "Apply `.tabular-data` (`JetBrains Mono` with `font-variant-numeric: tabular-nums`) to every live acceptability score, slider value, latency readout, and node identifier so dragging sliders never causes layout jitter.",
+        "section": "typography"
+      },
+      {
+        "name": "The Quiet Paper Rule",
+        "body": "Keep structural panes, inspector cards, and Lab panels completely shadow-free at rest; convey hierarchy with warm paper shifts and `1px` stone rules, reserving elevation strictly for spatial graph objects, floating canvas controls, and slider thumbs.",
+        "section": "elevation"
+      }
+    ],
+    "dos": [
+      "Do preserve the three-surface paper warmth hierarchy (`#f7f5f0` canvas, `#faf8f4` reading sheet, `#eeece4` apparatus rail) separated by `1px solid #d8d3c6` hairline rules.",
+      "Do pair color with structural redundancy: `dashed` strokes on enthymemes and severed gates, `3px` bottom borders on active tabs, `2px` bottom rules on prose highlights, and explicit text/numeric labels.",
+      "Do apply `.tabular-data` (`JetBrains Mono`, `font-variant-numeric: tabular-nums`) to every live score, slider value, latency pill, and node identifier.",
+      "Do restrict `Newsreader` (`1.15rem`, `1.78` line height, `62ch` max measure) to primary philosophical passages while keeping `IBM Plex Sans` (`15px` root) on all interface controls.",
+      "Do gate `180ms` to `200ms` ease-out transitions and React Flow `fitView` resize motion behind `prefers-reduced-motion`."
+    ],
+    "donts": [
+      "Don't introduce dark sci-fi node-cockpit grounds, neon wire glows, or cold neutral gray SaaS panels that conflict with the Critical-Edition Apparatus world.",
+      "Don't place box shadows on the header, reading pane, inspector rail, or Custom Lab cards at rest; reserve elevation for spatial graph nodes, floating canvas controls, and slider thumbs.",
+      "Don't render implicit enthymemes or undercutting attacks with solid cobalt borders; keep them visually distinct in burnt sienna (`#b45309`) with dashed geometry.",
+      "Don't omit `:focus-visible` `3px solid` outlines or rely on color alone to convey active tabs, selected text spans, or solver states."
+    ]
+  }
+}
