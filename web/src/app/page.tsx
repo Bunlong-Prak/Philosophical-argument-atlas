@@ -4,16 +4,18 @@ import React, { useCallback, useEffect, useMemo, useRef, useState } from "react"
 import { Activity, BookOpen } from "lucide-react";
 import { ApparatusInspector } from "@/components/ApparatusInspector";
 import { CustomLabPanel } from "@/components/CustomLabPanel";
+import { HermeneuticPrismPanel } from "@/components/HermeneuticPrismPanel";
 import { HypergraphCanvas } from "@/components/HypergraphCanvas";
 import { SourceReader } from "@/components/SourceReader";
 import type {
   ArgumentHypergraph,
+  HermeneuticLensDetail,
   PassageDetail,
   PassageSummary,
   SolverReport,
 } from "@/lib/types";
 
-type ActiveTab = "workbench" | "lab";
+type ActiveTab = "workbench" | "prism" | "lab";
 const DEFAULT_PASSAGE_ID = "dostoevsky-ivan-rebellion";
 
 function formatPassageOption(filename: string, nodeCount: number): string {
@@ -29,6 +31,7 @@ function formatPassageOption(filename: string, nodeCount: number): string {
 
 export default function WorkbenchPage() {
   const [passages, setPassages] = useState<PassageSummary[]>([]);
+  const [lenses, setLenses] = useState<HermeneuticLensDetail[]>([]);
   const [selectedId, setSelectedId] = useState<string>(DEFAULT_PASSAGE_ID);
   const [originalGraph, setOriginalGraph] = useState<ArgumentHypergraph | null>(null);
   const [graph, setGraph] = useState<ArgumentHypergraph | null>(null);
@@ -45,18 +48,24 @@ export default function WorkbenchPage() {
 
   const solveAbortRef = useRef<AbortController | null>(null);
   const workbenchTabRef = useRef<HTMLButtonElement | null>(null);
+  const prismTabRef = useRef<HTMLButtonElement | null>(null);
   const labTabRef = useRef<HTMLButtonElement | null>(null);
 
   useEffect(() => {
     let cancelled = false;
-    fetch("/api/passages")
-      .then((r) => {
+    Promise.all([
+      fetch("/api/passages").then((r) => {
         if (!r.ok) throw new Error(`Backend responded ${r.status}`);
-        return r.json();
-      })
-      .then((list: PassageSummary[]) => {
+        return r.json() as Promise<PassageSummary[]>;
+      }),
+      fetch("/api/hermeneutic-lenses")
+        .then((r) => (r.ok ? (r.json() as Promise<HermeneuticLensDetail[]>) : []))
+        .catch(() => [] as HermeneuticLensDetail[]),
+    ])
+      .then(([list, lensList]) => {
         if (cancelled) return;
         setPassages(list);
+        setLenses(lensList);
         if (list.length > 0 && !list.some((p) => p.passage_id === DEFAULT_PASSAGE_ID)) {
           setSelectedId(list[0].passage_id);
         }
@@ -202,13 +211,21 @@ export default function WorkbenchPage() {
   }, [report]);
 
   function handleTabKeyDown(e: React.KeyboardEvent, current: ActiveTab) {
-    if (e.key === "ArrowRight" || e.key === "ArrowLeft") {
-      e.preventDefault();
-      const next: ActiveTab = current === "workbench" ? "lab" : "workbench";
-      setActiveTab(next);
-      if (next === "workbench") workbenchTabRef.current?.focus();
-      else labTabRef.current?.focus();
-    }
+    const order: ActiveTab[] = ["workbench", "prism", "lab"];
+    const idx = order.indexOf(current);
+    let nextIdx: number | null = null;
+    if (e.key === "ArrowRight") nextIdx = (idx + 1) % order.length;
+    else if (e.key === "ArrowLeft") nextIdx = (idx - 1 + order.length) % order.length;
+    else if (e.key === "Home") nextIdx = 0;
+    else if (e.key === "End") nextIdx = order.length - 1;
+
+    if (nextIdx === null) return;
+    e.preventDefault();
+    const next = order[nextIdx];
+    setActiveTab(next);
+    if (next === "workbench") workbenchTabRef.current?.focus();
+    else if (next === "prism") prismTabRef.current?.focus();
+    else labTabRef.current?.focus();
   }
 
   return (
@@ -250,7 +267,7 @@ export default function WorkbenchPage() {
           </div>
         </div>
 
-        <nav aria-label="Workspace modes">
+        <nav className="atlas-nav" aria-label="Workspace modes">
           <div className="atlas-tablist" role="tablist" aria-label="Workbench Views">
             <button
               ref={workbenchTabRef}
@@ -263,6 +280,18 @@ export default function WorkbenchPage() {
               onKeyDown={(e) => handleTabKeyDown(e, "workbench")}
             >
               Dialectical Workbench
+            </button>
+            <button
+              ref={prismTabRef}
+              type="button"
+              role="tab"
+              id="tab-prism"
+              aria-selected={activeTab === "prism"}
+              className="atlas-tab"
+              onClick={() => setActiveTab("prism")}
+              onKeyDown={(e) => handleTabKeyDown(e, "prism")}
+            >
+              Hermeneutic Prism
             </button>
             <button
               ref={labTabRef}
@@ -360,6 +389,35 @@ export default function WorkbenchPage() {
                 </div>
               )}
             </>
+          )}
+        </div>
+
+        <div
+          role="tabpanel"
+          aria-labelledby="tab-prism"
+          hidden={activeTab !== "prism"}
+          style={{ blockSize: "100%" }}
+        >
+          {activeTab === "prism" && (
+            <HermeneuticPrismPanel
+              passages={passages}
+              lenses={lenses}
+              currentWorkbenchGraph={graph}
+              currentWorkbenchReport={report}
+              onOpenInWorkbench={(nextGraph, nextReport, nextArgdown) => {
+                setOriginalGraph(nextGraph);
+                setGraph(nextGraph);
+                setReport(nextReport);
+                setArgdownText(nextArgdown);
+                setSelectedId("__custom__");
+                setHoveredNodeId(null);
+                setSelectedNodeId(null);
+                setTNorm("godel");
+                setErrorMsg(null);
+                setLoading(false);
+                setActiveTab("workbench");
+              }}
+            />
           )}
         </div>
 

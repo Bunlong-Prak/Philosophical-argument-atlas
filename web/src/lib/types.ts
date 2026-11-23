@@ -120,3 +120,49 @@ export interface EnthymemeScoreBreakdown {
   final_score: number;
   verdict: string;
 }
+
+export interface PrecisionRecallF1 {
+  precision: number;
+  recall: number;
+  f1: number;
+  matched: number;
+  total_a: number;
+  total_b: number;
+}
+
+export interface NodeMatch {
+  a_id: string;
+  b_id: string;
+  similarity: number;
+  a_type: NodeType;
+  b_type: NodeType;
+  type_match: boolean;
+}
+
+export interface HypergraphAlignmentReport {
+  similarity_threshold: number;
+  matched_nodes: NodeMatch[];
+  unmatched_a_nodes: string[];
+  unmatched_b_nodes: string[];
+  node_prf: PrecisionRecallF1;
+  node_type_accuracy: number;
+  explicit_node_prf: PrecisionRecallF1;
+  enthymeme_prf: PrecisionRecallF1;
+  support_hyperedge_exact_prf: PrecisionRecallF1;
+  support_link_prf: PrecisionRecallF1;
+  rebuttal_prf: PrecisionRecallF1;
+  undercutter_prf: PrecisionRecallF1;
+  macro_relation_f1: number;
+  consensus_score: number;
+}
+
+export interface HermeneuticLensDetail {
+  lens_id: string;
+  target_passage_id: string;
+  title: string;
+  description: string;
+  filename: string;
+  argdown: string;
+  hypergraph: ArgumentHypergraph;
+  report: SolverReport;
+}

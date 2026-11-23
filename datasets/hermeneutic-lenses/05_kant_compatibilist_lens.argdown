@@ -1,0 +1,26 @@
+---
+passage_id: kant-compatibilist-lens
+target_passage_id: kant-third-antinomy
+lens_title: "Humean Compatibilist Reading"
+lens_summary: "Retains the unbroken natural-law premise and replaces the Thesis rationalist regress principle with a compatibilist undercutter, resolving Kant's deadlock toward Antithesis."
+source_text: "Thesis: Causality in accordance with laws of nature is not the only causality from which the appearances of the world can one and all be derived. To explain these appearances it is necessary to assume that there is also another causality, that of freedom. Let us assume that there is no other kind of causality than that in accordance with laws of nature. Antithesis: There is no freedom; everything in the world takes place solely in accordance with laws of nature."
+---
+
+# Propositions
+[P1]: Suppose every empirical appearance has only a prior natural cause ad infinitum. {type: counterfactual_assumption, credence: 0.9000, speaker: "Kant (Thesis Proof)", span: 256..355, quote: "Let us assume that there is no other kind of causality than that in accordance with laws of nature."}
+[E_compat]: Empirical explanation does not require an unconditioned first beginning outside time to make coherent sense of nature. {type: enthymeme, credence: 0.8400, speaker: "Empiricist Critic (Implicit)"}
+[Thesis]: It is necessary to assume another causality of transcendental freedom. {type: thesis, credence: 0.0000, speaker: "Kant (Dogmatic Thesis)", span: 146..255, quote: "To explain these appearances it is necessary to assume that there is also another causality, that of freedom."}
+[P2]: All appearances occur strictly according to laws of nature. {type: explicit_premise, credence: 0.9000, speaker: "Kant (Antithesis Proof)", span: 37..51, quote: "laws of nature"}
+[E2]: An uncaused spontaneous beginning would break the causal unity of empirical experience. {type: enthymeme, credence: 0.8500, speaker: "Kant (Antithesis Implicit)"}
+[Antithesis]: There is no freedom; everything occurs solely in accordance with laws of nature. {type: objection, credence: 0.0000, speaker: "Kant (Empiricist Antithesis)", span: 368..466, quote: "There is no freedom; everything in the world takes place solely in accordance with laws of nature."}
+
+# Support Hyperedges
+<H1>: [P1] +> [Thesis] {weight: 0.7000, scheme: reductio_ad_absurdum}
+<H2>: [P2] & [E2] +> [Antithesis] {weight: 0.9412, scheme: modus_ponens}
+
+# Rebutting Attacks
+<R1>: [Thesis] -> [Antithesis] {weight: 1.0000}
+<R2>: [Antithesis] -> [Thesis] {weight: 1.0000}
+
+# Undercutting Attacks
+<UND_compat>: [E_compat] _> <H1> {weight: 0.8800}

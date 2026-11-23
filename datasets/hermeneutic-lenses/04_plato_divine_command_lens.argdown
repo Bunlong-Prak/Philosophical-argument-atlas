@@ -1,0 +1,26 @@
+---
+passage_id: plato-voluntarism-paraphrase
+target_passage_id: plato-euthyphro-dilemma
+lens_title: "Paraphrased Voluntarism Lens"
+lens_summary: "Uses renamed proposition IDs (alt_*) and paraphrased voluntarist wording across all seven nodes to test semantic Hungarian bipartite node and undercutter alignment."
+source_text: "Piety, then, is that which is dear to the gods, and impiety is that which is not dear to them. The point which I should first wish to understand is whether the pious or holy is beloved by the gods because it is holy, or holy because it is beloved of the gods. But that which is dear to the gods is dear to them because it is loved by them, not loved by them because it is dear to them."
+---
+
+# Propositions
+[alt_P1]: Socrates notes Euthyphro's claim that piety equals whatever the gods love. {type: explicit_premise, credence: 0.8500, speaker: "Euthyphro", span: 0..46, quote: "Piety, then, is that which is dear to the gods"}
+[alt_E1]: Divine approval is what causes an act to be holy. {type: enthymeme, credence: 0.7800, speaker: "Euthyphro (Implicit)"}
+[alt_C]: An action is pious simply because it is beloved by the gods. {type: thesis, credence: 0.0000, speaker: "Euthyphro", span: 220..258, quote: "holy because it is beloved of the gods"}
+[alt_P2]: The gods love what is holy precisely because it already possesses holiness. {type: explicit_premise, credence: 0.9200, speaker: "Socrates", span: 156..215, quote: "the pious or holy is beloved by the gods because it is holy"}
+[alt_P3]: Being dear to the gods is an effect of their loving it. {type: explicit_premise, credence: 0.9500, speaker: "Socrates", span: 264..338, quote: "that which is dear to the gods is dear to them because it is loved by them"}
+[alt_E2]: Two concepts with inverse explanatory order cannot be identical. {type: enthymeme, credence: 0.9200, speaker: "Socrates (Implicit)"}
+[alt_U1]: Being loved by the gods is only an accidental feature, not the essence of piety. {type: objection, credence: 0.0000, speaker: "Socrates", span: 340..384, quote: "not loved by them because it is dear to them"}
+
+# Support Hyperedges
+<alt_H1>: [alt_P1] & [alt_E1] +> [alt_C] {weight: 0.9000, scheme: modus_ponens}
+<alt_H2>: [alt_P2] & [alt_P3] & [alt_E2] +> [alt_U1] {weight: 0.9500, scheme: disjunctive_syllogism}
+
+# Rebutting Attacks
+<alt_R1>: [alt_U1] -> [alt_C] {weight: 0.9500}
+
+# Undercutting Attacks
+<alt_UND1>: [alt_U1] _> <alt_H1> {weight: 0.9500}

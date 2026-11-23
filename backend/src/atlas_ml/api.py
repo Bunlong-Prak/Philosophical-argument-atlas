@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 from pathlib import Path
-from typing import Literal, Optional
+from typing import Any, Callable, Literal, Optional
 
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
@@ -77,14 +77,63 @@ class ExtractRequest(BaseModel):
     drop_invalid_enthymemes: bool = False
 
 
+class HermeneuticLensDetail(BaseModel):
+    lens_id: str
+    target_passage_id: str
+    title: str
+    description: str
+    filename: str
+    argdown: str
+    hypergraph: ArgumentHypergraph
+    report: SolverReport
+
+
+class CompareTextRequest(BaseModel):
+    passage_id: str = "comparison-passage"
+    source_text: str = Field(min_length=10)
+    provider_a: ProviderName = "groq"
+    model_a: Optional[str] = None
+    provider_b: ProviderName = "openai"
+    model_b: Optional[str] = None
+    similarity_threshold: float = Field(default=0.72, ge=0.0, le=1.0)
+    verify_enthymemes: bool = True
+    drop_invalid_enthymemes: bool = False
+
+
+class CompareTextResponse(BaseModel):
+    result_a: PipelineResult
+    result_b: PipelineResult
+    alignment: HypergraphAlignmentReport
+
+
+def _parse_frontmatter_metadata(raw_text: str) -> dict[str, str]:
+    """Extracts YAML-like scalar frontmatter metadata fields from `.argdown` files."""
+    lines = raw_text.splitlines()
+    if not lines or lines[0].strip() != "---":
+        return {}
+    meta: dict[str, str] = {}
+    for line in lines[1:]:
+        stripped = line.strip()
+        if stripped == "---":
+            break
+        if ":" in stripped:
+            key, val = stripped.split(":", 1)
+            cleaned = val.strip().strip('"').strip("'")
+            meta[key.strip()] = cleaned
+    return meta
+
+
 def create_app(
     repo_root: Optional[Path] = None,
     nli_scorer: Optional[AbductiveNLIScorer] = None,
     aligner: Optional[BipartiteGraphAligner] = None,
+    llm_client_factory: Optional[Callable[[LLMConfig], Any]] = None,
 ) -> FastAPI:
     root = (repo_root or Path(__file__).resolve().parents[3]).resolve()
     corpus_dir = root / "datasets" / "phil-args"
+    lenses_dir = root / "datasets" / "hermeneutic-lenses"
     bridge = AtlasRustBridge(repo_root=root)
+    client_factory = llm_client_factory or HttpLLMClient
 
     state: dict[str, object] = {
         "scorer": nli_scorer,
@@ -117,12 +166,39 @@ def create_app(
     @app.get("/health")
     def health() -> dict[str, object]:
         files = sorted(corpus_dir.glob("*.argdown")) if corpus_dir.exists() else []
+        lens_files = sorted(lenses_dir.glob("*.argdown")) if lenses_dir.exists() else []
         release_exists = (root / "target" / "release" / "atlas-cli").exists()
         return {
             "status": "ok",
             "corpus_count": len(files),
+            "lens_count": len(lens_files),
             "rust_release_binary": release_exists,
         }
+
+    @app.get("/hermeneutic-lenses", response_model=list[HermeneuticLensDetail])
+    def list_hermeneutic_lenses() -> list[HermeneuticLensDetail]:
+        """Returns alternative philosophical reconstructions paired with corpus passages."""
+        if not lenses_dir.exists():
+            return []
+        lenses: list[HermeneuticLensDetail] = []
+        for path in sorted(lenses_dir.glob("*.argdown")):
+            raw = path.read_text(encoding="utf-8")
+            meta = _parse_frontmatter_metadata(raw)
+            graph = bridge.load_argdown(path)
+            report = bridge.solve(graph, strict_spans=bool(graph.source_text))
+            lenses.append(
+                HermeneuticLensDetail(
+                    lens_id=graph.passage_id,
+                    target_passage_id=meta.get("target_passage_id", ""),
+                    title=meta.get("lens_title", graph.passage_id),
+                    description=meta.get("lens_summary", ""),
+                    filename=path.name,
+                    argdown=raw,
+                    hypergraph=graph,
+                    report=report,
+                )
+            )
+        return lenses
 
     @app.get("/passages", response_model=list[PassageSummary])
     def list_passages() -> list[PassageSummary]:
@@ -226,7 +302,7 @@ def create_app(
 
     @app.post("/extract", response_model=PipelineResult)
     def extract_from_text(req: ExtractRequest) -> PipelineResult:
-        llm_client = HttpLLMClient(LLMConfig(provider=req.provider, model=req.model))
+        llm_client = client_factory(LLMConfig(provider=req.provider, model=req.model))
         pipeline = NeuroSymbolicPipeline(
             llm_client=llm_client,
             rust_bridge=bridge,
@@ -243,6 +319,46 @@ def create_app(
             raise HTTPException(status_code=503, detail=str(exc)) from exc
         except (LLMExtractionError, RustBridgeError) as exc:
             raise HTTPException(status_code=422, detail=str(exc)) from exc
+
+    @app.post("/compare-text", response_model=CompareTextResponse)
+    def compare_text_models(req: CompareTextRequest) -> CompareTextResponse:
+        """Extracts graphs from raw text using two providers/models and aligns them."""
+        scorer = get_scorer() if req.verify_enthymemes else None
+        pipe_a = NeuroSymbolicPipeline(
+            llm_client=client_factory(LLMConfig(provider=req.provider_a, model=req.model_a)),
+            rust_bridge=bridge,
+            nli_scorer=scorer,
+        )
+        pipe_b = NeuroSymbolicPipeline(
+            llm_client=client_factory(LLMConfig(provider=req.provider_b, model=req.model_b)),
+            rust_bridge=bridge,
+            nli_scorer=scorer,
+        )
+        try:
+            res_a = pipe_a.run(
+                passage_id=f"{req.passage_id}-lens-a",
+                source_text=req.source_text,
+                verify_enthymemes=req.verify_enthymemes,
+                drop_invalid_enthymemes=req.drop_invalid_enthymemes,
+            )
+            res_b = pipe_b.run(
+                passage_id=f"{req.passage_id}-lens-b",
+                source_text=req.source_text,
+                verify_enthymemes=req.verify_enthymemes,
+                drop_invalid_enthymemes=req.drop_invalid_enthymemes,
+            )
+        except LLMConfigurationError as exc:
+            raise HTTPException(status_code=503, detail=str(exc)) from exc
+        except (LLMExtractionError, RustBridgeError) as exc:
+            raise HTTPException(status_code=422, detail=str(exc)) from exc
+
+        graph_aligner = get_aligner()
+        alignment = graph_aligner.align(
+            res_a.hypergraph,
+            res_b.hypergraph,
+            threshold=req.similarity_threshold,
+        )
+        return CompareTextResponse(result_a=res_a, result_b=res_b, alignment=alignment)
 
     return app
 

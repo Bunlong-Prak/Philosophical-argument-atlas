@@ -190,3 +190,110 @@ def test_fastapi_endpoints_corpus_solve_and_align() -> None:
         },
     )
     assert extract_resp.status_code == 503
+
+    # Hermeneutic lenses endpoint serves curated strict-span alternative readings.
+    lenses_resp = client.get("/hermeneutic-lenses")
+    assert lenses_resp.status_code == 200
+    lenses = lenses_resp.json()
+    assert len(lenses) >= 4
+    targets = {item["target_passage_id"] for item in lenses}
+    assert "dostoevsky-ivan-rebellion" in targets
+    assert "kant-third-antinomy" in targets
+
+    # Compare-text also returns clean 503 when cloud API key is missing.
+    compare_err = client.post(
+        "/compare-text",
+        json={
+            "passage_id": "cmp-check",
+            "source_text": "I think, therefore I am, beyond all hyperbolic doubt.",
+            "provider_a": "groq",
+            "provider_b": "openai",
+        },
+    )
+    assert compare_err.status_code == 503
+
+
+def test_compare_text_hermeneutic_endpoint_with_dual_clients() -> None:
+    source = (
+        "All inferences from experience, therefore, are effects of custom, "
+        "not of reasoning."
+    )
+    payload_a = {
+        "nodes": [
+            {
+                "id": "P1",
+                "proposition": "Experience inferences stem from custom rather than reason.",
+                "node_type": "explicit_premise",
+                "quote": "effects of custom, not of reasoning.",
+                "speaker": "Hume",
+                "base_credence": 0.95,
+            },
+            {
+                "id": "E1",
+                "proposition": "Habitual expectation lacks deductive rational justification.",
+                "node_type": "enthymeme",
+                "base_credence": 0.85,
+            },
+            {
+                "id": "C",
+                "proposition": "Inferences from experience are custom not reasoning.",
+                "node_type": "thesis",
+                "quote": "All inferences from experience, therefore, are effects of custom",
+                "speaker": "Hume",
+                "base_credence": 0.0,
+            },
+        ],
+        "support_hyperedges": [
+            {"id": "H1", "premises": ["P1", "E1"], "conclusion": "C", "weight": 0.95}
+        ],
+    }
+    payload_b = {
+        "nodes": [
+            {
+                "id": "B_P1",
+                "proposition": "Experience inferences stem from custom rather than reason.",
+                "node_type": "explicit_premise",
+                "quote": "effects of custom, not of reasoning.",
+                "speaker": "Hume",
+                "base_credence": 0.95,
+            },
+            {
+                "id": "B_C",
+                "proposition": "Inferences from experience are custom not reasoning.",
+                "node_type": "thesis",
+                "quote": "All inferences from experience, therefore, are effects of custom",
+                "speaker": "Hume",
+                "base_credence": 0.0,
+            },
+        ],
+        "support_hyperedges": [
+            {"id": "B_H1", "premises": ["B_P1"], "conclusion": "B_C", "weight": 0.90}
+        ],
+    }
+
+    def factory(cfg: LLMConfig) -> _FakeLLMClient:
+        return _FakeLLMClient(payload_a if cfg.provider == "groq" else payload_b)
+
+    app = create_app(
+        repo_root=REPO_ROOT,
+        nli_scorer=_FakeNLIScorer(),  # type: ignore[arg-type]
+        aligner=BipartiteGraphAligner(similarity_threshold=0.70, embed_fn=_bow_embed),
+        llm_client_factory=factory,
+    )
+    client = TestClient(app)
+
+    resp = client.post(
+        "/compare-text",
+        json={
+            "passage_id": "hume-cmp",
+            "source_text": source,
+            "provider_a": "groq",
+            "provider_b": "openai",
+            "similarity_threshold": 0.70,
+        },
+    )
+    assert resp.status_code == 200
+    data = resp.json()
+    assert data["alignment"]["explicit_node_prf"]["f1"] == 1.0
+    assert data["alignment"]["enthymeme_prf"]["f1"] == 0.0
+    assert data["alignment"]["unmatched_a_nodes"] == ["E1"]

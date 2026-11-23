@@ -105,16 +105,17 @@ argument-atlas/
 │   └── argdown.rs      <-- Reads and writes .argdown files
 ├── crates/atlas-cli/src/main.rs   <-- Terminal commands (inspect, solve, convert)
 ├── datasets/phil-args/            <-- 6 curated public-domain passages
+├── datasets/hermeneutic-lenses/   <-- 4 rival interpretive readings for comparison
 ├── backend/src/atlas_ml/          <-- Python ML, NLI, aligner & FastAPI server
 │   ├── schemas.py      <-- Python models + quote repair (DeterministicSpanGrounder)
 │   ├── rust_bridge.py  <-- Calls compiled Rust binary over JSON stdin/stdout
 │   ├── nli_enthymeme.py<-- Local DeBERTa-v3 + BGE-small assumption scorer
 │   ├── graph_aligner.py<-- Compares two graphs via Hungarian matching
 │   ├── extractor.py    <-- LLM JSON extractor -> grounder -> NLI -> Rust
-│   └── api.py          <-- FastAPI HTTP endpoints (/passages, /solve, /parse-argdown, /extract)
+│   └── api.py          <-- FastAPI HTTP endpoints (/passages, /hermeneutic-lenses, /solve, /align, /compare-text)
 └── web/src/                       <-- Next.js 16 + React Flow Interactive Workbench
     ├── app/            <-- Top workbench layout, Critical-Edition CSS tokens, page state
-    ├── components/     <-- SourceReader, HypergraphCanvas, ApparatusInspector, CustomLabPanel
+    ├── components/     <-- SourceReader, HypergraphCanvas, ApparatusInspector, HermeneuticPrismPanel, CustomLabPanel
     └── lib/            <-- Shared TypeScript API types + ELK layered graph builder
 ```
 
@@ -132,11 +133,12 @@ uv run uvicorn atlas_ml.api:create_app --factory --reload --port 8000
 Useful endpoints right away (open interactive docs at `http://127.0.0.1:8000/docs`):
 - `GET /passages` lists all 6 curated passages.
 - `GET /passages/kant-third-antinomy` returns the full hypergraph, `.argdown` text, and solver output.
+- `GET /hermeneutic-lenses` returns the 4 rival philosophical interpretations paired with Rust solver reports.
 - `POST /solve` takes any modified hypergraph (for instance, changing a premise's `base_credence` from `0.9` to `0.0`) and returns updated `DF-QuAD`, `Dung`, and knockout outputs.
 - `POST /parse-argdown` parses raw `.argdown` text offline into a solved hypergraph package.
 - `POST /score-enthymemes` ranks candidate hidden assumptions using local `DeBERTa-v3`.
-- `POST /align` aligns two graphs for cross-model comparison.
-- `POST /extract` extracts a hypergraph from raw text using Groq, OpenAI, Anthropic, or local Ollama (returns HTTP `503` with instructions if the cloud API key is unset).
+- `POST /align` aligns two graphs for cross-model or cross-interpretation comparison.
+- `POST /extract` and `POST /compare-text` extract graphs from raw text using Groq, OpenAI, Anthropic, or local Ollama (returning HTTP `503` when required cloud keys are unset).
 
 ---
 
@@ -150,12 +152,22 @@ npm install
 npm run dev
 ```
 
-Open `http://localhost:3000`. The Workbench splits into three synchronized areas so you never lose track of which box matches which sentence:
+Open `http://localhost:3000`. Use the top tabs to switch between three focused views:
+
+### Tab 1: Dialectical Workbench
+The Workbench splits into three synchronized panes so you keep track of which box matches which sentence:
 
 1. **Left pane (`SourceReader`):** Reads the primary passage in warm archival serif type. Explicit premises carry crisp cobalt underlines (`[P1]`), theses carry green (`[C]`), and hidden assumptions sit listed below in dashed amber boxes (`[E1]`). Hovering or selecting any sentence illuminates its node on the graph.
 2. **Center pane (`HypergraphCanvas`):** Renders the layered Bipolar Hypergraph via ELK and React Flow. Solid cobalt lines show active logical support, dashed amber lines mark unspoken assumptions and Pollock undercutters, and red arrows mark direct rebuttals. Notice what happens when an assumption fails: its inference gate flips to `SEVERED` and turns muted gray dashed strokes.
 3. **Right pane (`ApparatusInspector`):** Gives each root assumption a live credence slider (`0.00` to `1.00`), plus one-click **Test** buttons beside the ranked **Minimal Knockouts**. Click **Test** on `[E2]` in Dostoevsky's Rebellion to drop it to `0.00` and watch Thesis `[C]` fall from `0.7125` to `0.0000` in under 1 millisecond, then click **Reset** or toggle between **Gödel min** and **Product** T-norms.
 
-Need to test your own argument? Switch to the **Custom Text & NLI Lab** tab at the top:
+### Tab 2: Hermeneutic Prism
+Compare two readings of a philosophical text side-by-side:
+- Pick **Reading A** (any curated corpus passage or your current modified Workbench graph) and **Reading B** (a curated rival lens like *Teleological Theodicy Challenge* on Dostoevsky or *Humean Compatibilist Reading* on Kant).
+- Slide **Cosine Similarity Threshold (tau)** from `0.45` to `0.95`. Watch `Explicit Claims F1`, `Enthymemes F1`, `Support Gates F1`, `Rebuttals F1`, `Undercutters F1`, and `Thesis Outcome Shift` update immediately.
+- Read the matched pair table below plus the dashed `Unique to Reading A` and `Unique to Reading B` cards, or click **Open Reading B in Workbench** to stress-test the rival lens directly on the graph canvas.
+
+### Tab 3: Custom Text & NLI Lab
+Need to test your own argument? Open **Custom Text & NLI Lab**:
 - Use **DeBERTa-v3 Enthymeme Auditor** on the left to test candidate hidden assumptions locally (with one-click Descartes and Dostoevsky presets).
 - Use **Load Custom Argument Graph** on the right in `.argdown (Offline)` mode to write or edit formal arguments with zero API keys, or switch to `Raw Text (LLM)` to run extraction with Groq, OpenAI, Anthropic, or local Ollama.

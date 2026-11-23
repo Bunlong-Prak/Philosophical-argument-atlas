@@ -1,0 +1,23 @@
+---
+passage_id: dostoevsky-theodicy-lens
+target_passage_id: dostoevsky-ivan-rebellion
+lens_title: "Teleological Theodicy Challenge"
+lens_summary: "Omits Ivan's agent-consent enthymeme [E2] and introduces a teleological counter-premise rebutting the absolute deontological side-constraint."
+source_text: "And if the sufferings of children go to swell the sum of sufferings which was necessary to pay for truth, then I protest that the truth is not worth such a price. I would rather remain with my unavenged suffering and unsatisfied indignation, even if I were wrong. Too high a price is asked for harmony; it is beyond our means to pay so much to enter on it. And so I hasten to give back my entrance ticket."
+---
+
+# Propositions
+[P1]: Eternal cosmic harmony demands uncompensated suffering of innocent children as its price. {type: counterfactual_assumption, credence: 0.9500, speaker: "Ivan Karamazov", span: 7..104, quote: "the sufferings of children go to swell the sum of sufferings which was necessary to pay for truth"}
+[E1]: No future teleological good can justify using an innocent child's suffering as a mere instrument. {type: enthymeme, credence: 0.8800, speaker: "Ivan Karamazov (Implicit)"}
+[E_theodicy]: An infinite universal reconciliation can outweigh finite temporal suffering if free moral creatures choose redemption. {type: enthymeme, credence: 0.7400, speaker: "Teleological Theodicy (Implicit)"}
+[P2]: Truth and eschatological harmony are not worth buying with children's suffering. {type: explicit_premise, credence: 0.0000, speaker: "Ivan Karamazov", span: 126..161, quote: "the truth is not worth such a price"}
+[P3]: Asking humanity to pay that price exceeds legitimate moral bounds. {type: explicit_premise, credence: 0.0000, speaker: "Ivan Karamazov", span: 264..356, quote: "Too high a price is asked for harmony; it is beyond our means to pay so much to enter on it."}
+[C]: Therefore I refuse to accept cosmic harmony and return my entrance ticket. {type: thesis, credence: 0.0000, speaker: "Ivan Karamazov", span: 357..405, quote: "And so I hasten to give back my entrance ticket."}
+
+# Support Hyperedges
+<H1>: [P1] & [E1] +> [P2] {weight: 0.9500, scheme: consequence}
+<H2>: [P2] +> [P3] {weight: 0.9200, scheme: modus_ponens}
+<H3>: [P3] +> [C] {weight: 0.9200, scheme: practical_reasoning}
+
+# Rebutting Attacks
+<R_theo>: [E_theodicy] -> [E1] {weight: 0.7800}

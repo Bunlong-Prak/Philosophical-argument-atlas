@@ -99,7 +99,7 @@ npm install
 npm run dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000). You can switch between the 6 primary passages, trace colored prose quotes to hypergraph nodes, drag assumption sliders to watch downstream beliefs collapse, and parse your own `.argdown` scripts or test hidden assumptions in the **Custom Text & NLI Lab** tab.
+Open [http://localhost:3000](http://localhost:3000). Switch between **Dialectical Workbench** (synchronized source reader, hypergraph canvas, live sliders), **Hermeneutic Prism** (compare rival philosophical lenses via BGE embeddings and Hungarian bipartite matching), and **Custom Text & NLI Lab** (test hidden assumptions with `DeBERTa-v3` or parse `.argdown` scripts offline).
 
 Optional research scripts (download Hugging Face weights on first run):
 
@@ -109,6 +109,9 @@ uv run python scripts/eval_enthymeme_ablation.py
 
 # Audit all 6 curated passages and run live BGE-small Hungarian graph alignment
 uv run python scripts/eval_corpus_and_aligner.py
+
+# Benchmark all 4 rival Hermeneutic Lenses across similarity thresholds (0.65, 0.72, 0.80)
+uv run python scripts/eval_hermeneutic_prism.py
 ```
 
 ---
@@ -120,8 +123,9 @@ uv run python scripts/eval_corpus_and_aligner.py
 | [crates/atlas-core](crates/atlas-core/src/lib.rs) | Rust Bipolar Hypergraph model, span verifier, `DF-QuAD` solver, Dung compiler, knockout search, and `.argdown` parser/exporter. |
 | [crates/atlas-cli](crates/atlas-cli/src/main.rs) | CLI binary supporting `inspect`, `solve --stdin`, and `convert`. |
 | [datasets/phil-args](datasets/phil-args) | Six public-domain philosophical passages (Descartes, Hume, Dostoevsky, Plato, Kant, Mill) with verified character spans. |
+| [datasets/hermeneutic-lenses](datasets/hermeneutic-lenses) | Curated rival readings (Lichtenberg on Descartes, Utilitarian Theodicy on Dostoevsky, Voluntarist paraphrase on Plato, Humean compatibilism on Kant). |
 | [backend/src/atlas_ml](backend/src/atlas_ml) | Span grounder, Rust IPC bridge, `DeBERTa-v3` NLI enthymeme scorer, Hungarian graph aligner, LLM extractor, and FastAPI app. |
-| [web/src](web/src) | Next.js 16 + React Flow + ELK interactive Workbench UI (split source reader, layered hypergraph canvas, live sliders, NLI & `.argdown` lab). |
+| [web/src](web/src) | Next.js 16 + React Flow + ELK interactive Workbench UI (source reader, hypergraph canvas, Hermeneutic Prism comparator, and NLI / `.argdown` lab). |
 | [DESIGN.md](DESIGN.md) | Tokenized Critical-Edition Apparatus visual specification paired with `.impeccable/design.json`. |
 | [docs/GUIDE.md](docs/GUIDE.md) | ADHD-friendly visual walkthrough of the concepts, files, UI panes, and API endpoints. |
 | [docs/RESEARCH_LOG.md](docs/RESEARCH_LOG.md) | Running lab notebook recording bugs found, math fixes, and empirical results. |
@@ -131,9 +135,9 @@ uv run python scripts/eval_corpus_and_aligner.py
 ## Roadmap
 
 - [x] **Milestone 1 (Core Rust Engine):** Bipolar hypergraph model, `DF-QuAD` solver, Dung (`Grounded`, `Preferred`, `Stable`) compiler, Minimal Premise Knockout search, and `atlas-cli`.
-- [ ] **Milestone 2 (Benchmark Corpus):** Bidirectional `.argdown` bridge and 6 verified public-domain passages (`PhilArgs-6`); next target is expanding to `PhilArgs-50`.
+- [ ] **Milestone 2 (Benchmark Corpus):** Bidirectional `.argdown` bridge, 6 primary passages (`PhilArgs-6`), and 4 rival interpretive lenses; next target is expanding the primary corpus toward `PhilArgs-50`.
 - [x] **Milestone 3 (Neuro-Symbolic Pipeline):** Deterministic span grounder, `DeBERTa-v3` NLI enthymeme scorer, multi-provider LLM JSON extractor (`Groq`, `OpenAI`, `Anthropic`, `Ollama`), and FastAPI service.
-- [ ] **Milestone 4 (Hermeneutic Prism):** Hungarian bipartite graph aligner over `BGE` embeddings is complete; multi-model consensus benchmarking across live LLMs is next.
+- [x] **Milestone 4 (Hermeneutic Prism):** Hungarian bipartite graph aligner over `BGE` embeddings, curated rival philosophical lenses, dual-provider `POST /compare-text` endpoint, threshold benchmark script, and interactive **Hermeneutic Prism** UI tab.
 - [x] **Milestone 5 (Interactive Workbench UI):** Next.js split primary-text reader, ELK layered React Flow hypergraph canvas, live credence sliders with knockout testing, and offline `.argdown` + NLI lab backed by the local FastAPI + Rust engine.
 
 ---

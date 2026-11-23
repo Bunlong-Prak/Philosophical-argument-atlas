@@ -1,0 +1,22 @@
+---
+passage_id: descartes-lichtenberg-lens
+target_passage_id: descartes-discourse-cogito
+lens_title: "Lichtenberg Grammatical Reading"
+lens_summary: "Retains explicit spans while replacing Cartesian substance bridging with an implicit grammatical undercutter questioning the move from thought to an enduring 'I'."
+source_text: "Whilst I thus wished to think that all was false, it was absolutely necessary that I, who thus thought, should be somewhat; and as I observed that this truth, I think, therefore I am, was so certain and of such evidence that no ground of doubt, however extravagant, could be alleged by the sceptics capable of shaking it, I concluded that I might, without scruple, accept it as the first principle of the philosophy of which I was in search."
+---
+
+# Propositions
+[P1]: Whilst thinking or wishing to doubt occurs, mental activity is undeniable. {type: explicit_premise, credence: 1.0000, speaker: "Descartes", span: 0..48, quote: "Whilst I thus wished to think that all was false"}
+[E_gram]: Introspective awareness immediately attests only that thinking is taking place rather than proving an enduring metaphysical soul. {type: enthymeme, credence: 0.7800, speaker: "Lichtenberg (Implicit)"}
+[P2]: Something thinking exists at the moment this doubt occurs. {type: explicit_premise, credence: 0.0000, speaker: "Descartes", span: 50..122, quote: "it was absolutely necessary that I, who thus thought, should be somewhat"}
+[P3]: Sceptical scenarios cannot overturn the certainty of present thinking. {type: explicit_premise, credence: 0.9000, speaker: "Descartes", span: 225..320, quote: "no ground of doubt, however extravagant, could be alleged by the sceptics capable of shaking it"}
+[U_lich]: Moving from "there is thinking" to a persistent substantial subject "I" commits a grammatical fallacy. {type: enthymeme, credence: 0.7200, speaker: "Lichtenberg Critique"}
+[C]: The claim "I think, therefore I exist as an enduring thinking substance" serves as philosophy's first principle. {type: thesis, credence: 0.0000, speaker: "Descartes", span: 159..182, quote: "I think, therefore I am"}
+
+# Support Hyperedges
+<H1>: [P1] & [E_gram] +> [P2] {weight: 0.9000, scheme: modus_ponens}
+<H2>: [P2] & [P3] +> [C] {weight: 0.9000, scheme: modus_ponens}
+
+# Undercutting Attacks
+<UND_lich>: [U_lich] _> <H1> {weight: 0.8500}

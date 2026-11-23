@@ -193,3 +193,32 @@ This document records all architectural decisions, mathematical formulations, em
 - `uv run pytest -v`: `8 passed` (including `POST /parse-argdown`, `/solve`, `/align`, and `/extract` 503 guard).
 - `cd web && npm run lint && npm run build`: `tsc --noEmit` and Next.js 16 production build passed cleanly.
 - Playwright end-to-end check on live Next.js + FastAPI (`1440x900` desktop, `390x844` workbench, `390x844` lab tab): confirmed `0` console/page/HTTP errors, `0` horizontal overflow on all three views, unclipped hypergraph bounds (`47px+` vertical clearance), live knockout + reset state propagation, and custom `.argdown` graph loading; Impeccable Finish Reviewer scored all 5 material fixes resolved (`disposition: ship`).
+
+---
+
+## Milestone 4, Unit 4.1: Hermeneutic Prism Multi-Lens Corpus, Dual-Provider API, and Interactive UI
+- **Date:** 2026-11-22
+- **Status:** Implemented & Verified (`8/8` Rust tests, `10/10` pytest, live `BAAI/bge-small-en-v1.5` benchmark, `tsc --noEmit` + `next build` clean, `impeccable detect --json` `0` findings, Playwright desktop + 390px mobile zero-overflow verified)
+
+### 1. Components Added
+1. **Curated Rival Hermeneutic Lenses ([datasets/hermeneutic-lenses](file:///Users/mac/Projects/personal/Philosophy_in_AI/argument-atlas/datasets/hermeneutic-lenses)):**
+   - Added 4 strict-span `.argdown` rival philosophical readings paired to corpus texts:
+     - `01_descartes_lichtenberg_lens.argdown` (introduces grammatical undercutter `<UND_lich>` against `<H1>`, collapsing `[C]` from `0.7410 in` to `0.2451 out`).
+     - `03_dostoevsky_theodicy_lens.argdown` (omits `[E2]` and adds `[E_theodicy]` rebutting `[E1]`, shifting `[C]` from `0.7125 in` to `0.2992 out`).
+     - `04_plato_divine_command_lens.argdown` (reconstructs Euthyphro across 7 paraphrased propositions and renamed `alt_*` IDs to test semantic isomorphism across thresholds).
+     - `05_kant_compatibilist_lens.argdown` (drops rationalist regress premise `[E1]` and undercuts `<H1>`, breaking Kant's `0.4000 / 0.4000` deadlock to `Thesis=0.0000 out`, `Antithesis=0.8000 in`).
+2. **Backend Endpoints & Benchmark Runner ([api.py](file:///Users/mac/Projects/personal/Philosophy_in_AI/argument-atlas/backend/src/atlas_ml/api.py), [eval_hermeneutic_prism.py](file:///Users/mac/Projects/personal/Philosophy_in_AI/argument-atlas/backend/scripts/eval_hermeneutic_prism.py)):**
+   - Exposed `GET /hermeneutic-lenses` and `POST /compare-text` (runs two configured providers via `NeuroSymbolicPipeline` and aligns their outputs via `BipartiteGraphAligner`, returning HTTP `503` when cloud API keys are unset).
+   - Added `eval_hermeneutic_prism.py` computing threshold sensitivity across $\tau \in \{0.65, 0.72, 0.80\}$ with live `BAAI/bge-small-en-v1.5` embeddings.
+3. **Interactive Hermeneutic Prism UI ([HermeneuticPrismPanel.tsx](file:///Users/mac/Projects/personal/Philosophy_in_AI/argument-atlas/web/src/components/HermeneuticPrismPanel.tsx), [page.tsx](file:///Users/mac/Projects/personal/Philosophy_in_AI/argument-atlas/web/src/app/page.tsx), [globals.css](file:///Users/mac/Projects/personal/Philosophy_in_AI/argument-atlas/web/src/app/globals.css)):**
+   - Added **Hermeneutic Prism** tab with Reading A / Reading B selectors (including current live Workbench state), an interactive cosine similarity slider ($\tau \in [0.45, 0.95]$), a 6-metric consensus scoreboard + Thesis shift card, a container-query responsive match table (`@container (width < 640px)`), dashed divergence lists, and a one-click **Open Reading B in Workbench** jump button.
+
+### 2. Live Benchmark Observations (`BAAI/bge-small-en-v1.5`)
+- At the default threshold $\tau = 0.72$:
+  - `plato-voluntarism-paraphrase` vs `plato-euthyphro-dilemma`: `ExplicitF1 = 1.000`, `EnthF1 = 1.000`, `SupEdgeF1 = 1.000`, `RebF1 = 1.000`, `UndF1 = 1.000`, `Consensus = 1.000`. Raising $\tau \to 0.80$ drops one heavily paraphrased explicit match (`ExplicitF1 = 0.800`, `UndF1 = 0.000`, `Consensus = 0.678`).
+  - `dostoevsky-theodicy-lens` vs `dostoevsky-ivan-rebellion`: `ExplicitF1 = 1.000`, `EnthF1 = 0.500`, `SupEdgeF1 = 0.667`, `RebF1 = 0.000`, `Consensus = 0.583`, capturing exact divergence on `[E2]` and `[E_theodicy]` while explicit text spans stay aligned.
+  - `descartes-lichtenberg-lens` vs `descartes-discourse-cogito`: `ExplicitF1 = 0.750`, `EnthF1 = 0.000`, `UndF1 = 0.000`, `Consensus = 0.417`.
+  - `kant-compatibilist-lens` vs `kant-third-antinomy`: `ExplicitF1 = 0.750`, `EnthF1 = 0.500`, `RebF1 = 1.000`, `UndF1 = 0.000`, `Consensus = 0.500`.
+
+### 3. UI Bug Caught & Fixed During Browser Audit
+- **Header Flex Overflow Across Three Tabs on 390px Mobile:** Adding `"Hermeneutic Prism"` to `.atlas-tablist` caused flex items without `min-inline-size: 0` or wrapping to widen `document.documentElement` past `390px`. Adding `.atlas-nav` (`min-inline-size: 0; max-inline-size: 100%`), `flex-wrap: wrap` on `.atlas-tablist`, compact mobile tab padding below `640px`, and removing the inner table height cap eliminated horizontal overflow (`overflow_mobile = false`, `overflow_lab_mobile = false`, `overflow_prism_mobile = false`).

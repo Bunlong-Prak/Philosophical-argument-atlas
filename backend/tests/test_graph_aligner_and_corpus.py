@@ -18,6 +18,7 @@ from atlas_ml.schemas import (
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
 PHIL_ARGS_DIR = REPO_ROOT / "datasets" / "phil-args"
+LENSES_DIR = REPO_ROOT / "datasets" / "hermeneutic-lenses"
 
 
 def _bow_hash_embed(texts: list[str], dim: int = 128) -> np.ndarray:
@@ -194,3 +195,30 @@ def test_bipartite_graph_aligner_handles_renamed_ids_and_structural_divergences(
     assert shallow_report.rebuttal_prf.f1 == 1.0
     assert shallow_report.undercutter_prf.f1 == 0.0
     assert shallow_report.consensus_score < 0.70
+
+
+def test_hermeneutic_lenses_strict_spans_solver_and_divergence() -> None:
+    bridge = AtlasRustBridge(repo_root=REPO_ROOT)
+    lens_files = sorted(LENSES_DIR.glob("*.argdown"))
+    assert len(lens_files) >= 4
+
+    solved_lenses = {
+        path.stem: bridge.solve(bridge.load_argdown(path), strict_spans=True)
+        for path in lens_files
+    }
+
+    # Descartes Lichtenberg lens breaks Cogito justification via grammatical undercutter.
+    lich = solved_lenses["01_descartes_lichtenberg_lens"]
+    assert lich.dung_semantics.grounded_labels["C"] == "out"
+    assert lich.gradual_df_quad.node_acceptability["C"] < 0.35
+
+    # Dostoevsky Theodicy lens weakens E1 and flips Thesis C out.
+    theo = solved_lenses["03_dostoevsky_theodicy_lens"]
+    assert theo.dung_semantics.grounded_labels["C"] == "out"
+    assert theo.gradual_df_quad.node_acceptability["C"] < 0.40
+
+    # Kant Compatibilist lens resolves the symmetric antinomy toward Antithesis.
+    compat = solved_lenses["05_kant_compatibilist_lens"]
+    assert compat.dung_semantics.grounded_labels["Antithesis"] == "in"
+    assert compat.gradual_df_quad.node_acceptability["Antithesis"] > 0.70
+    assert compat.gradual_df_quad.node_acceptability["Thesis"] == pytest.approx(0.0, abs=1e-6)
