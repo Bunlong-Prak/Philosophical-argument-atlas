@@ -35,7 +35,7 @@ def _bow_hash_embed(texts: list[str], dim: int = 128) -> np.ndarray:
 def test_expanded_corpus_covers_rebuttals_undercutters_and_antinomy_cycles() -> None:
     bridge = AtlasRustBridge(repo_root=REPO_ROOT)
     files = sorted(PHIL_ARGS_DIR.glob("*.argdown"))
-    assert len(files) >= 6
+    assert len(files) >= 12
 
     reports = {
         path.stem: bridge.solve(bridge.load_argdown(path), strict_spans=True)
@@ -67,6 +67,28 @@ def test_expanded_corpus_covers_rebuttals_undercutters_and_antinomy_cycles() -> 
     assert mill.dung_semantics.grounded_labels["Censorship"] == "out"
     assert mill.gradual_df_quad.node_acceptability["C"] > 0.85
     assert mill.gradual_df_quad.hyperedge_transmission["H_censor"] < 0.15
+
+    # St. Anselm vs. Gaunilo: Lost Island parody undercuts <H1>, defeating [C].
+    anselm = reports["07_anselm_ontological_argument"]
+    assert anselm.dung_semantics.grounded_labels["P_island"] == "in"
+    assert anselm.dung_semantics.grounded_labels["C"] == "out"
+    assert anselm.gradual_df_quad.hyperedge_transmission["H1"] < 0.25
+
+    # Spinoza Substance Monism & Pascal's Wager: [E1] is surfaced as #1 Minimal Knockout.
+    spinoza = reports["08_spinoza_substance_monism"]
+    assert spinoza.dung_semantics.grounded_labels["C"] == "in"
+    assert spinoza.minimal_knockouts[0].removed_node_ids == ["E1"]
+
+    pascal = reports["09_pascal_wager"]
+    assert pascal.dung_semantics.grounded_labels["C"] == "in"
+    assert pascal.minimal_knockouts[0].removed_node_ids == ["E1"]
+
+    # Zhuangzi vs. Huizi (Joy of Fish): Zhuangzi's counter-rebuttals defeat Huizi's undercutter,
+    # reinstating <H1> and [C] under Dung Grounded Semantics!
+    zhuangzi = reports["12_zhuangzi_joy_of_fish"]
+    assert zhuangzi.dung_semantics.grounded_labels["O_hui"] == "out"
+    assert zhuangzi.dung_semantics.grounded_labels["C"] == "in"
+    assert zhuangzi.gradual_df_quad.node_acceptability["C"] > 0.75
 
 
 def test_bipartite_graph_aligner_handles_renamed_ids_and_structural_divergences() -> None:
@@ -200,7 +222,7 @@ def test_bipartite_graph_aligner_handles_renamed_ids_and_structural_divergences(
 def test_hermeneutic_lenses_strict_spans_solver_and_divergence() -> None:
     bridge = AtlasRustBridge(repo_root=REPO_ROOT)
     lens_files = sorted(LENSES_DIR.glob("*.argdown"))
-    assert len(lens_files) >= 4
+    assert len(lens_files) >= 6
 
     solved_lenses = {
         path.stem: bridge.solve(bridge.load_argdown(path), strict_spans=True)
@@ -222,3 +244,12 @@ def test_hermeneutic_lenses_strict_spans_solver_and_divergence() -> None:
     assert compat.dung_semantics.grounded_labels["Antithesis"] == "in"
     assert compat.gradual_df_quad.node_acceptability["Antithesis"] > 0.70
     assert compat.gradual_df_quad.node_acceptability["Thesis"] == pytest.approx(0.0, abs=1e-6)
+
+    # Pascal Many-Gods lens & Epicurus Free-Will lens defeat their respective theses.
+    many_gods = solved_lenses["09_pascal_many_gods_lens"]
+    assert many_gods.dung_semantics.grounded_labels["C"] == "out"
+    assert many_gods.gradual_df_quad.node_acceptability["C"] < 0.30
+
+    free_will = solved_lenses["11_epicurus_free_will_lens"]
+    assert free_will.dung_semantics.grounded_labels["C"] == "out"
+    assert free_will.gradual_df_quad.node_acceptability["C"] < 0.30

@@ -1,0 +1,20 @@
+---
+passage_id: epicurus-free-will-lens
+target_passage_id: epicurus-problem-of-evil
+lens_title: "Plantinga Free-Will Defense Reading"
+lens_summary: "Introduces a libertarian free-will defense rebutting Epicurus's assumption [E1] that an omnipotent God can eliminate all moral evil without sacrificing genuine moral agency."
+source_text: "Epicurus's old questions are yet unanswered. Is he willing to prevent evil, but not able? then is he impotent. Is he able, but not willing? then is he malevolent. Is he both able and willing? whence then is evil?"
+---
+
+# Propositions
+[P1]: A deity willing yet unable to prevent evil lacks omnipotence. {type: explicit_premise, credence: 0.9500, speaker: "Philo", span: 45..110, quote: "Is he willing to prevent evil, but not able? then is he impotent."}
+[P2]: A deity able yet unwilling to prevent evil lacks perfect goodness. {type: explicit_premise, credence: 0.9500, speaker: "Philo", span: 111..162, quote: "Is he able, but not willing? then is he malevolent."}
+[E1]: An omnipotent benevolent God could prevent all evil without forfeiting any greater moral good. {type: enthymeme, credence: 0.8200, speaker: "Epicurus (Implicit)"}
+[E_freewill]: Creating significantly free moral agents is a supreme good that logically precludes causally guaranteeing they never choose evil. {type: enthymeme, credence: 0.8500, speaker: "Free-Will Defense (Implicit)"}
+[C]: Evil proves God cannot be both omnipotent and wholly benevolent. {type: thesis, credence: 0.0000, speaker: "Philo", span: 163..212, quote: "Is he both able and willing? whence then is evil?"}
+
+# Support Hyperedges
+<H1>: [P1] & [P2] & [E1] +> [C] {weight: 0.9600, scheme: modus_tollens}
+
+# Rebutting Attacks
+<R_freewill>: [E_freewill] -> [E1] {weight: 0.9000}

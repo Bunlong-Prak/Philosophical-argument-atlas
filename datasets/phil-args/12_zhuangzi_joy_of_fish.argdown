@@ -1,0 +1,23 @@
+---
+passage_id: zhuangzi-joy-of-fish
+source_text: "See how the minnows are darting about! That is the pleasure of fishes. You not being a fish yourself, how can you possibly know in what consists the pleasure of fishes? You not being I, how can you know that I do not know? You asked me how I knew what made fishes happy, so you already knew that I knew when you asked me. I knew it from my own feelings on this bridge."
+---
+
+# Propositions
+[P1]: The minnows darting effortlessly through the stream display unforced natural vitality. {type: explicit_premise, credence: 0.9200, speaker: "Zhuangzi", span: 0..38, quote: "See how the minnows are darting about!"}
+[P2]: Zhuangzi directly perceives this attunement from his own lived experience standing on the Hao River bridge. {type: explicit_premise, credence: 0.8800, speaker: "Zhuangzi", span: 322..368, quote: "I knew it from my own feelings on this bridge."}
+[E1]: Attuned perception across living beings can grasp creaturely flourishing without requiring species identity. {type: enthymeme, credence: 0.8400, speaker: "Zhuangzi (Implicit)"}
+[C]: The darting minnows genuinely experience the joy of fishes. {type: thesis, credence: 0.0000, speaker: "Zhuangzi", span: 39..70, quote: "That is the pleasure of fishes."}
+[O_hui]: Because Zhuangzi is not a fish, he lacks epistemic access to what constitutes fish pleasure. {type: objection, credence: 0.8600, speaker: "Huizi", span: 71..168, quote: "You not being a fish yourself, how can you possibly know in what consists the pleasure of fishes?"}
+[D1]: By Huizi's own species-barrier principle, since Huizi is not Zhuangzi, Huizi cannot know what Zhuangzi fails to know. {type: explicit_premise, credence: 0.9000, speaker: "Zhuangzi", span: 169..222, quote: "You not being I, how can you know that I do not know?"}
+[D2]: Asking whence Zhuangzi knew what makes fishes happy grammatically presupposes that Zhuangzi did know. {type: explicit_premise, credence: 0.8500, speaker: "Zhuangzi", span: 223..321, quote: "You asked me how I knew what made fishes happy, so you already knew that I knew when you asked me."}
+
+# Support Hyperedges
+<H1>: [P1] & [P2] & [E1] +> [C] {weight: 0.9400, scheme: sign_or_evidence}
+
+# Rebutting Attacks
+<R_tu_quoque>: [D1] -> [O_hui] {weight: 0.8800}
+<R_presup>: [D2] -> [O_hui] {weight: 0.8200}
+
+# Undercutting Attacks
+<UND_hui>: [O_hui] _> <H1> {weight: 0.9200}

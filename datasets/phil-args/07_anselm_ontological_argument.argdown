@@ -1,0 +1,19 @@
+---
+passage_id: anselm-ontological-argument
+source_text: "And assuredly that, than which nothing greater can be conceived, cannot exist in the understanding alone. For, suppose it exists in the understanding alone: then it can be conceived to exist in reality; which is greater. You could no more doubt that this island which is more excellent than all lands exists somewhere in reality than you can doubt that that is in your understanding."
+---
+
+# Propositions
+[P1]: Suppose that than which nothing greater can be conceived exists in the understanding alone. {type: counterfactual_assumption, credence: 0.9000, speaker: "St. Anselm", span: 111..155, quote: "suppose it exists in the understanding alone"}
+[P2]: Existing in reality as well as in the understanding is greater than existing in the understanding alone. {type: explicit_premise, credence: 0.8500, speaker: "St. Anselm", span: 162..219, quote: "it can be conceived to exist in reality; which is greater"}
+[E1]: Extramental existence is a genuine perfection-making property that increases a being's greatness. {type: enthymeme, credence: 0.7800, speaker: "St. Anselm (Implicit)"}
+[C]: That than which nothing greater can be conceived cannot exist in the understanding alone, and therefore exists in reality. {type: thesis, credence: 0.0000, speaker: "St. Anselm", span: 14..104, quote: "that, than which nothing greater can be conceived, cannot exist in the understanding alone"}
+[E_gaunilo]: Any deductive schema that derives real existence from maximal conceptual excellence overgenerates absurd existent objects. {type: enthymeme, credence: 0.8600, speaker: "Gaunilo of Marmoutiers (Implicit)"}
+[P_island]: By parallel reasoning, an unrealized lost island more excellent than all lands would have to exist in reality. {type: objection, credence: 0.0000, speaker: "Gaunilo of Marmoutiers", span: 250..328, quote: "this island which is more excellent than all lands exists somewhere in reality"}
+
+# Support Hyperedges
+<H1>: [P1] & [P2] & [E1] +> [C] {weight: 0.9500, scheme: reductio_ad_absurdum}
+<H_parody>: [E_gaunilo] +> [P_island] {weight: 0.9200, scheme: analogy}
+
+# Undercutting Attacks
+<UND1>: [P_island] _> <H1> {weight: 0.9000}

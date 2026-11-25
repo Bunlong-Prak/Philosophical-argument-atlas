@@ -1,0 +1,15 @@
+---
+passage_id: aristotle-function-ergon
+source_text: "Have the carpenter, then, and the shoemaker certain functions and courses of action, and has man as man none, but is he born without a function? Life seems to be common even to plants, while we are seeking what is peculiar to man. There remains, then, an active life of the element that has a rational principle. Human good turns out to be activity of soul in accordance with virtue."
+---
+
+# Propositions
+[P1]: Just as artisans and bodily parts have characteristic functions, human beings qua human possess a distinctive function. {type: explicit_premise, credence: 0.8800, speaker: "Aristotle", span: 0..144, quote: "Have the carpenter, then, and the shoemaker certain functions and courses of action, and has man as man none, but is he born without a function?"}
+[P2]: Nutritive biological life is shared with plants and animals, so it cannot be what is distinctive to human beings. {type: explicit_premise, credence: 0.9500, speaker: "Aristotle", span: 145..230, quote: "Life seems to be common even to plants, while we are seeking what is peculiar to man."}
+[P3]: Active exercise of the rational faculty remains as the distinctively human function. {type: explicit_premise, credence: 0.0000, speaker: "Aristotle", span: 231..312, quote: "There remains, then, an active life of the element that has a rational principle."}
+[E1]: The supreme good of any natural kind consists in performing its characteristic species-function with excellence (virtue). {type: enthymeme, credence: 0.8000, speaker: "Aristotle (Implicit)"}
+[C]: The supreme human good (eudaimonia) is activity of the soul in accordance with rational virtue. {type: thesis, credence: 0.0000, speaker: "Aristotle", span: 313..383, quote: "Human good turns out to be activity of soul in accordance with virtue."}
+
+# Support Hyperedges
+<H1>: [P1] & [P2] +> [P3] {weight: 0.9200, scheme: disjunctive_syllogism}
+<H2>: [P3] & [E1] +> [C] {weight: 0.9500, scheme: modus_ponens}

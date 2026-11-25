@@ -1,0 +1,15 @@
+---
+passage_id: spinoza-substance-monism
+source_text: "God is a substance consisting of infinite attributes, of which each expresses eternal and infinite essentiality, and God necessarily exists; therefore if any substance besides God were granted, it would have to be explained by some attribute of God, and thus two substances with the same attribute would exist, which is absurd; therefore no substance can exist, or be conceived, besides God."
+---
+
+# Propositions
+[P1]: God necessarily exists as a substance consisting of infinite attributes, each expressing eternal infinite essence. {type: explicit_premise, credence: 0.9200, speaker: "Baruch Spinoza", span: 0..139, quote: "God is a substance consisting of infinite attributes, of which each expresses eternal and infinite essentiality, and God necessarily exists"}
+[P2]: Suppose a second substance besides God is granted, which must then be conceived through one of God's attributes. {type: counterfactual_assumption, credence: 0.9500, speaker: "Baruch Spinoza", span: 151..248, quote: "if any substance besides God were granted, it would have to be explained by some attribute of God"}
+[E1]: Two distinct substances cannot share the exact same attribute in nature (Ethics I, Prop. 5). {type: enthymeme, credence: 0.8400, speaker: "Baruch Spinoza (Implicit)"}
+[P3]: Positing another substance entails the absurdity of two substances sharing the same attribute. {type: explicit_premise, credence: 0.0000, speaker: "Baruch Spinoza", span: 259..326, quote: "two substances with the same attribute would exist, which is absurd"}
+[C]: Therefore no substance besides God can exist or be conceived. {type: thesis, credence: 0.0000, speaker: "Baruch Spinoza", span: 338..390, quote: "no substance can exist, or be conceived, besides God"}
+
+# Support Hyperedges
+<H1>: [P2] & [E1] +> [P3] {weight: 0.9600, scheme: modus_ponens}
+<H2>: [P1] & [P3] +> [C] {weight: 0.9600, scheme: reductio_ad_absurdum}

@@ -1,0 +1,15 @@
+---
+passage_id: pascal-wager
+source_text: "God is, or He is not. Reason can decide nothing here. A game is being played at the extremity of this infinite distance where heads or tails will turn up. Let us weigh the gain and the loss in wagering that God is. If you gain, you gain all; if you lose, you lose nothing. Wager, then, without hesitation that He is."
+---
+
+# Propositions
+[P1]: Theoretical reason alone cannot settle whether God exists. {type: explicit_premise, credence: 0.9200, speaker: "Blaise Pascal", span: 22..53, quote: "Reason can decide nothing here."}
+[P2]: Human life forces an unavoidable practical choice equivalent to wagering on God's existence. {type: explicit_premise, credence: 0.9000, speaker: "Blaise Pascal", span: 54..154, quote: "A game is being played at the extremity of this infinite distance where heads or tails will turn up."}
+[P3]: Wagering that God exists yields infinite gain if true and negligible finite loss if false. {type: explicit_premise, credence: 0.9000, speaker: "Blaise Pascal", span: 215..272, quote: "If you gain, you gain all; if you lose, you lose nothing."}
+[E1]: The decision matrix contains only one coherent infinite-reward deity rather than rival mutually exclusive gods. {type: enthymeme, credence: 0.7200, speaker: "Blaise Pascal (Implicit)"}
+[E2]: Rational agents facing forced epistemic uncertainty ought to choose the action with dominant expected value. {type: enthymeme, credence: 0.8500, speaker: "Blaise Pascal (Implicit)"}
+[C]: One ought rationally to wager without hesitation that God exists. {type: thesis, credence: 0.0000, speaker: "Blaise Pascal", span: 273..316, quote: "Wager, then, without hesitation that He is."}
+
+# Support Hyperedges
+<H1>: [P1] & [P2] & [P3] & [E1] & [E2] +> [C] {weight: 0.9500, scheme: practical_reasoning}

@@ -1,0 +1,22 @@
+---
+passage_id: pascal-many-gods-lens
+target_passage_id: pascal-wager
+lens_title: "Diderot Many-Gods Critique"
+lens_summary: "Introduces Denis Diderot's Many-Gods objection, rebutting Pascal's binary partition assumption [E1] so symmetric infinite expectations cancel out."
+source_text: "God is, or He is not. Reason can decide nothing here. A game is being played at the extremity of this infinite distance where heads or tails will turn up. Let us weigh the gain and the loss in wagering that God is. If you gain, you gain all; if you lose, you lose nothing. Wager, then, without hesitation that He is."
+---
+
+# Propositions
+[P1]: Speculative reason alone cannot decide whether God exists. {type: explicit_premise, credence: 0.9200, speaker: "Blaise Pascal", span: 22..53, quote: "Reason can decide nothing here."}
+[P2]: Life compels a practical choice concerning belief in God. {type: explicit_premise, credence: 0.9000, speaker: "Blaise Pascal", span: 54..154, quote: "A game is being played at the extremity of this infinite distance where heads or tails will turn up."}
+[P3]: Wagering on Pascal's God promises infinite reward if right and finite cost if wrong. {type: explicit_premise, credence: 0.9000, speaker: "Blaise Pascal", span: 215..272, quote: "If you gain, you gain all; if you lose, you lose nothing."}
+[E1]: Only a single exclusive deity offers infinite reward in the decision table. {type: enthymeme, credence: 0.7200, speaker: "Blaise Pascal (Implicit)"}
+[E_diderot]: Rival possible deities with positive epistemic probability reward skepticism or punish wagering on competing gods, breaking expected-value dominance. {type: enthymeme, credence: 0.8600, speaker: "Denis Diderot (Implicit)"}
+[E2]: Practical rationality under uncertainty maximizes expected utility. {type: enthymeme, credence: 0.8500, speaker: "Blaise Pascal (Implicit)"}
+[C]: One ought rationally to wager without hesitation that Pascal's God exists. {type: thesis, credence: 0.0000, speaker: "Blaise Pascal", span: 273..316, quote: "Wager, then, without hesitation that He is."}
+
+# Support Hyperedges
+<H1>: [P1] & [P2] & [P3] & [E1] & [E2] +> [C] {weight: 0.9500, scheme: practical_reasoning}
+
+# Rebutting Attacks
+<R_many_gods>: [E_diderot] -> [E1] {weight: 0.9200}

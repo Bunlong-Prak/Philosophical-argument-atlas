@@ -1,0 +1,13 @@
+---
+passage_id: epicurus-problem-of-evil
+source_text: "Epicurus's old questions are yet unanswered. Is he willing to prevent evil, but not able? then is he impotent. Is he able, but not willing? then is he malevolent. Is he both able and willing? whence then is evil?"
+---
+
+# Propositions
+[P1]: A deity willing to prevent evil yet unable to do so lacks omnipotence. {type: explicit_premise, credence: 0.9500, speaker: "Philo (quoting Epicurus)", span: 45..110, quote: "Is he willing to prevent evil, but not able? then is he impotent."}
+[P2]: A deity able to prevent evil yet unwilling to do so lacks perfect benevolence. {type: explicit_premise, credence: 0.9500, speaker: "Philo (quoting Epicurus)", span: 111..162, quote: "Is he able, but not willing? then is he malevolent."}
+[E1]: Genuine evil exists in the world without any morally overriding reason that compels an omnipotent benevolent deity to allow it. {type: enthymeme, credence: 0.8200, speaker: "Epicurus (Implicit)"}
+[C]: The persistence of evil is incompatible with the simultaneous omnipotence and perfect benevolence of God. {type: thesis, credence: 0.0000, speaker: "Philo (quoting Epicurus)", span: 163..212, quote: "Is he both able and willing? whence then is evil?"}
+
+# Support Hyperedges
+<H1>: [P1] & [P2] & [E1] +> [C] {weight: 0.9600, scheme: modus_tollens}
