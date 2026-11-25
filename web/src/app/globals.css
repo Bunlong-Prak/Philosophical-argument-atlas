@@ -212,6 +212,63 @@ button {
   background: var(--paper-reading);
 }
 
+/* Accessible Share Link Copy Button + Live Status Tip (modern-web-guidance: copy-button) */
+.copy-share-wrap {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+
+.copy-share-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  min-inline-size: 24px;
+  min-block-size: 32px;
+  padding: 0.25rem 0.65rem;
+  border-radius: 6px;
+  border: 1px solid var(--rule-strong);
+  background: var(--paper-card);
+  color: var(--ink-primary);
+  font-size: 0.8rem;
+  font-weight: 600;
+}
+
+.copy-share-btn:hover {
+  border-color: var(--cobalt);
+  color: var(--cobalt);
+}
+
+.copy-share-btn[data-copied] {
+  border-color: var(--forest-border);
+  background: var(--forest-soft);
+  color: var(--forest);
+}
+
+.copy-share-btn[data-failed] {
+  border-color: var(--crimson-border);
+  background: var(--crimson-soft);
+  color: var(--crimson);
+}
+
+.copy-status-tip {
+  font-size: 0.76rem;
+  font-weight: 600;
+  color: var(--forest);
+  opacity: 0;
+  pointer-events: none;
+}
+
+.copy-share-btn[data-copied] + .copy-status-tip {
+  opacity: 1;
+}
+
+.copy-share-btn[data-failed] + .copy-status-tip {
+  color: var(--crimson);
+  opacity: 1;
+}
+
 /* 3-Pane Split Workbench */
 .workbench-grid {
   display: grid;

@@ -2,6 +2,7 @@
 
 import React, { useState } from "react";
 import { FileCode2, Play, Sparkles } from "lucide-react";
+import { parseArgdownWasm } from "@/lib/wasmSolver";
 import type {
   ArgumentHypergraph,
   EnthymemeScoreBreakdown,
@@ -118,19 +119,24 @@ export function CustomLabPanel({ onLoadExtractedGraph }: CustomLabPanelProps) {
     setExtractLoading(true);
     try {
       if (graphInputMode === "argdown") {
-        const resp = await fetch("/api/parse-argdown", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            argdown: argdownScript,
-            strict_spans: true,
-          }),
-        });
-        if (!resp.ok) {
-          const err = await resp.json().catch(() => ({ detail: resp.statusText }));
-          throw new Error(err.detail || "Failed to parse .argdown input");
+        let detail: PassageDetail;
+        try {
+          detail = await parseArgdownWasm(argdownScript, { strictSpans: true });
+        } catch {
+          const resp = await fetch("/api/parse-argdown", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              argdown: argdownScript,
+              strict_spans: true,
+            }),
+          });
+          if (!resp.ok) {
+            const err = await resp.json().catch(() => ({ detail: resp.statusText }));
+            throw new Error(err.detail || "Failed to parse .argdown input");
+          }
+          detail = await resp.json();
         }
-        const detail: PassageDetail = await resp.json();
         onLoadExtractedGraph(detail.hypergraph, detail.report, detail.argdown);
         return;
       }

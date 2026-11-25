@@ -1,12 +1,14 @@
 "use client";
 
 import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { Activity, BookOpen } from "lucide-react";
+import { Activity, BookOpen, Check, Link2 } from "lucide-react";
 import { ApparatusInspector } from "@/components/ApparatusInspector";
 import { CustomLabPanel } from "@/components/CustomLabPanel";
 import { HermeneuticPrismPanel } from "@/components/HermeneuticPrismPanel";
 import { HypergraphCanvas } from "@/components/HypergraphCanvas";
 import { SourceReader } from "@/components/SourceReader";
+import { loadStaticCorpusBundle } from "@/lib/staticBundle";
+import { getAtlasWasm, solveGraphWasm } from "@/lib/wasmSolver";
 import type {
   ArgumentHypergraph,
   HermeneuticLensDetail,
@@ -29,6 +31,21 @@ function formatPassageOption(filename: string, nodeCount: number): string {
   return `${title} (${nodeCount} nodes)`;
 }
 
+function legacyClipboardCopy(text: string): boolean {
+  const previousFocus = document.activeElement as HTMLElement | null;
+  const field = Object.assign(document.createElement("textarea"), { value: text });
+  field.setAttribute("readonly", "");
+  field.style.cssText = "position:fixed;inset-block-start:0;opacity:0";
+  document.body.append(field);
+  field.select();
+  try {
+    return document.execCommand("copy");
+  } finally {
+    field.remove();
+    previousFocus?.focus({ preventScroll: true });
+  }
+}
+
 export default function WorkbenchPage() {
   const [passages, setPassages] = useState<PassageSummary[]>([]);
   const [lenses, setLenses] = useState<HermeneuticLensDetail[]>([]);
@@ -45,35 +62,89 @@ export default function WorkbenchPage() {
   const [loading, setLoading] = useState<boolean>(true);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
   const [liveStatus, setLiveStatus] = useState<string>("");
+  const [solverModeLabel, setSolverModeLabel] = useState<"Wasm" | "Rust">("Rust");
+  const [copyState, setCopyState] = useState<"idle" | "copied" | "failed">("idle");
+  const [copyTipText, setCopyTipText] = useState<string>("");
 
   const solveAbortRef = useRef<AbortController | null>(null);
+  const copyTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const lastCopyMsgRef = useRef<string>("");
+  const pendingUrlStateRef = useRef<{
+    norm?: "godel" | "product";
+    credences?: Map<string, number>;
+  } | null>(null);
   const workbenchTabRef = useRef<HTMLButtonElement | null>(null);
   const prismTabRef = useRef<HTMLButtonElement | null>(null);
   const labTabRef = useRef<HTMLButtonElement | null>(null);
 
+  // Hydrate initial URL share parameters and pre-warm the in-browser Rust Wasm module.
+  useEffect(() => {
+    getAtlasWasm()
+      .then(() => setSolverModeLabel("Wasm"))
+      .catch(() => {});
+
+    if (typeof window !== "undefined") {
+      const params = new URL(window.location.href).searchParams;
+      const urlPassage = params.get("passage");
+      const urlTab = params.get("tab");
+      const urlNorm = params.get("norm");
+      const urlCreds = params.get("c");
+
+      if (urlTab === "workbench" || urlTab === "prism" || urlTab === "lab") {
+        setActiveTab(urlTab);
+      }
+      if (urlPassage) {
+        setSelectedId(urlPassage);
+      }
+      const credMap = new Map<string, number>();
+      if (urlCreds) {
+        for (const pair of urlCreds.split(",")) {
+          const [nid, rawVal] = pair.split(":");
+          const parsed = Number(rawVal);
+          if (nid && Number.isFinite(parsed) && parsed >= 0 && parsed <= 1) {
+            credMap.set(nid, parsed);
+          }
+        }
+      }
+      if (urlNorm === "product" || urlNorm === "godel" || credMap.size > 0) {
+        pendingUrlStateRef.current = {
+          norm: urlNorm === "product" ? "product" : urlNorm === "godel" ? "godel" : undefined,
+          credences: credMap.size > 0 ? credMap : undefined,
+        };
+      }
+    }
+  }, []);
+
   useEffect(() => {
     let cancelled = false;
     Promise.all([
-      fetch("/api/passages").then((r) => {
+      fetch("/api/passages", { signal: AbortSignal.timeout(2500) }).then((r) => {
         if (!r.ok) throw new Error(`Backend responded ${r.status}`);
         return r.json() as Promise<PassageSummary[]>;
       }),
-      fetch("/api/hermeneutic-lenses")
+      fetch("/api/hermeneutic-lenses", { signal: AbortSignal.timeout(2500) })
         .then((r) => (r.ok ? (r.json() as Promise<HermeneuticLensDetail[]>) : []))
         .catch(() => [] as HermeneuticLensDetail[]),
     ])
+      .catch(async () => {
+        const bundle = await loadStaticCorpusBundle();
+        return [bundle.passages, bundle.lenses] as const;
+      })
       .then(([list, lensList]) => {
         if (cancelled) return;
         setPassages(list);
         setLenses(lensList);
-        if (list.length > 0 && !list.some((p) => p.passage_id === DEFAULT_PASSAGE_ID)) {
-          setSelectedId(list[0].passage_id);
-        }
+        setSelectedId((curr) => {
+          if (curr === "__custom__" || list.some((p) => p.passage_id === curr)) {
+            return curr;
+          }
+          return list[0]?.passage_id ?? DEFAULT_PASSAGE_ID;
+        });
       })
       .catch((err) => {
         if (!cancelled) {
           setErrorMsg(
-            `Cannot reach FastAPI backend at /api (${err instanceof Error ? err.message : String(err)}). Ensure uvicorn is running on port 8000.`,
+            `Failed to load Argument Atlas corpus (${err instanceof Error ? err.message : String(err)}).`,
           );
           setLoading(false);
         }
@@ -89,21 +160,63 @@ export default function WorkbenchPage() {
     setLoading(true);
     setErrorMsg(null);
 
-    fetch(`/api/passages/${encodeURIComponent(selectedId)}`)
+    fetch(`/api/passages/${encodeURIComponent(selectedId)}`, {
+      signal: AbortSignal.timeout(2500),
+    })
       .then((r) => {
-        if (!r.ok) throw new Error(`Failed to load passage '${selectedId}'`);
-        return r.json();
+        if (!r.ok) throw new Error(`HTTP ${r.status}`);
+        return r.json() as Promise<PassageDetail>;
       })
-      .then((detail: PassageDetail) => {
+      .catch(async () => {
+        const bundle = await loadStaticCorpusBundle();
+        const detail = bundle.passage_details[selectedId];
+        if (!detail) {
+          throw new Error(`Passage '${selectedId}' not found in corpus bundle.`);
+        }
+        return detail;
+      })
+      .then(async (detail: PassageDetail) => {
         if (cancelled) return;
         setOriginalGraph(detail.hypergraph);
-        setGraph(detail.hypergraph);
-        setReport(detail.report);
         setArgdownText(detail.argdown);
         setHoveredNodeId(null);
         setSelectedNodeId(null);
-        setTNorm("godel");
-        setLoading(false);
+
+        const pending = pendingUrlStateRef.current;
+        pendingUrlStateRef.current = null;
+        const appliedNorm = pending?.norm ?? "godel";
+        setTNorm(appliedNorm);
+
+        if (pending && (pending.credences || appliedNorm !== "godel")) {
+          const patchedGraph: ArgumentHypergraph = pending.credences
+            ? {
+                ...detail.hypergraph,
+                nodes: detail.hypergraph.nodes.map((n) =>
+                  pending.credences!.has(n.id)
+                    ? { ...n, base_credence: pending.credences!.get(n.id)! }
+                    : n,
+                ),
+              }
+            : detail.hypergraph;
+          setGraph(patchedGraph);
+          try {
+            const wasmRep = await solveGraphWasm(patchedGraph, {
+              strictSpans: Boolean(patchedGraph.source_text),
+              threshold: 0.5,
+              tNorm: appliedNorm,
+            });
+            if (!cancelled) {
+              setSolverModeLabel("Wasm");
+              setReport(wasmRep);
+            }
+          } catch {
+            if (!cancelled) setReport(detail.report);
+          }
+        } else {
+          setGraph(detail.hypergraph);
+          setReport(detail.report);
+        }
+        if (!cancelled) setLoading(false);
       })
       .catch((err) => {
         if (!cancelled) {
@@ -119,6 +232,25 @@ export default function WorkbenchPage() {
 
   const runLiveSolve = useCallback(
     async (nextGraph: ArgumentHypergraph, nextNorm: "godel" | "product") => {
+      try {
+        const wasmReport = await solveGraphWasm(nextGraph, {
+          strictSpans: Boolean(nextGraph.source_text),
+          threshold: 0.5,
+          tNorm: nextNorm,
+        });
+        setSolverModeLabel("Wasm");
+        setReport(wasmReport);
+        if (wasmReport.thesis_id) {
+          const score = wasmReport.gradual_df_quad.node_acceptability[wasmReport.thesis_id];
+          setLiveStatus(
+            `Solved via WebAssembly in ${wasmReport.solve_time_microseconds} microseconds. Thesis ${wasmReport.thesis_id} acceptability ${score.toFixed(2)}.`,
+          );
+        }
+        return;
+      } catch {
+        // Fall back to FastAPI /api/solve if WebAssembly fails to initialize.
+      }
+
       solveAbortRef.current?.abort();
       const ctrl = new AbortController();
       solveAbortRef.current = ctrl;
@@ -140,6 +272,7 @@ export default function WorkbenchPage() {
           throw new Error(err.detail || "Solve failed");
         }
         const nextReport: SolverReport = await resp.json();
+        setSolverModeLabel("Rust");
         setReport(nextReport);
         if (nextReport.thesis_id) {
           const score = nextReport.gradual_df_quad.node_acceptability[nextReport.thesis_id];
@@ -155,6 +288,63 @@ export default function WorkbenchPage() {
     },
     [],
   );
+
+  const handleCopyShareLink = useCallback(async () => {
+    if (typeof window === "undefined") return;
+    const shareUrl = new URL(window.location.href);
+    shareUrl.search = "";
+    if (selectedId && selectedId !== "__custom__") {
+      shareUrl.searchParams.set("passage", selectedId);
+    }
+    if (activeTab !== "workbench") {
+      shareUrl.searchParams.set("tab", activeTab);
+    }
+    if (tNorm !== "godel") {
+      shareUrl.searchParams.set("norm", tNorm);
+    }
+    if (graph && originalGraph && selectedId !== "__custom__") {
+      const origMap = new Map(originalGraph.nodes.map((n) => [n.id, n.base_credence]));
+      const diffs: string[] = [];
+      for (const n of graph.nodes) {
+        const base = origMap.get(n.id);
+        if (base !== undefined && Math.abs(base - n.base_credence) > 1e-4) {
+          diffs.push(`${n.id}:${n.base_credence.toFixed(2)}`);
+        }
+      }
+      if (diffs.length > 0) {
+        shareUrl.searchParams.set("c", diffs.join(","));
+      }
+    }
+
+    const urlStr = shareUrl.toString();
+    window.history.replaceState(null, "", urlStr);
+
+    let ok = false;
+    try {
+      await navigator.clipboard.writeText(urlStr);
+      ok = true;
+    } catch {
+      ok = legacyClipboardCopy(urlStr);
+    }
+
+    if (copyTimerRef.current) clearTimeout(copyTimerRef.current);
+    setCopyState("idle");
+    setCopyTipText("");
+    let message = ok ? "Copied" : "Copy failed";
+    if (message === lastCopyMsgRef.current) {
+      message += "\u00A0";
+    }
+    lastCopyMsgRef.current = message;
+
+    requestAnimationFrame(() => {
+      setCopyState(ok ? "copied" : "failed");
+      setCopyTipText(message);
+    });
+    copyTimerRef.current = setTimeout(() => {
+      setCopyState("idle");
+      setCopyTipText("");
+    }, 2000);
+  }, [selectedId, activeTab, tNorm, graph, originalGraph]);
 
   const handleChangeCredence = useCallback(
     (nodeId: string, newCredence: number) => {
@@ -312,9 +502,28 @@ export default function WorkbenchPage() {
           {report && (
             <span className="atlas-latency-pill tabular-data">
               <Activity size={13} aria-hidden="true" color="#1d4ed8" />
-              Rust solver: {report.solve_time_microseconds} &mu;s
+              {solverModeLabel} solver: {report.solve_time_microseconds} &mu;s
             </span>
           )}
+          <span className="copy-share-wrap">
+            <button
+              type="button"
+              className="copy-share-btn"
+              onClick={handleCopyShareLink}
+              data-copied={copyState === "copied" ? "" : undefined}
+              data-failed={copyState === "failed" ? "" : undefined}
+            >
+              {copyState === "copied" ? (
+                <Check size={14} aria-hidden="true" color="var(--forest)" />
+              ) : (
+                <Link2 size={14} aria-hidden="true" color="var(--cobalt)" />
+              )}
+              Share state
+            </button>
+            <span role="status" className="copy-status-tip">
+              {copyTipText}
+            </span>
+          </span>
         </div>
       </header>
 

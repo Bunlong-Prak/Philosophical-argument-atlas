@@ -2,6 +2,7 @@
 
 import React, { useEffect, useMemo, useRef, useState } from "react";
 import { ArrowUpRight, GitCompareArrows } from "lucide-react";
+import { alignGraphsStaticFallback, loadStaticCorpusBundle } from "@/lib/staticBundle";
 import type {
   ArgumentHypergraph,
   HermeneuticLensDetail,
@@ -50,11 +51,18 @@ export function HermeneuticPrismPanel({
   currentWorkbenchReport,
   onOpenInWorkbench,
 }: HermeneuticPrismPanelProps) {
-  const defaultSourceA = currentWorkbenchGraph
-    ? `workbench:${currentWorkbenchGraph.passage_id}`
-    : passages[0]
-      ? `passage:${passages[0].passage_id}`
-      : "";
+  const hasMatchingLensForCurrent = Boolean(
+    currentWorkbenchGraph &&
+      lenses.some((l) => l.target_passage_id === currentWorkbenchGraph.passage_id),
+  );
+  const defaultSourceA =
+    currentWorkbenchGraph && hasMatchingLensForCurrent
+      ? `workbench:${currentWorkbenchGraph.passage_id}`
+      : passages.some((p) => p.passage_id === "dostoevsky-ivan-rebellion")
+        ? "passage:dostoevsky-ivan-rebellion"
+        : passages[0]
+          ? `passage:${passages[0].passage_id}`
+          : "";
 
   const [sourceAKey, setSourceAKey] = useState<string>(defaultSourceA);
   const [sourceBKey, setSourceBKey] = useState<string>("");
@@ -119,11 +127,19 @@ export function HermeneuticPrismPanel({
         const cached = passageCache[pid];
         return { graph: cached.hypergraph, report: cached.report, argdown: cached.argdown };
       }
-      const resp = await fetch(`/api/passages/${encodeURIComponent(pid)}`);
-      if (!resp.ok) {
-        throw new Error(`Failed to load passage '${pid}'`);
-      }
-      const detail: PassageDetail = await resp.json();
+      const detail = await fetch(`/api/passages/${encodeURIComponent(pid)}`, {
+        signal: AbortSignal.timeout(2500),
+      })
+        .then((resp) => {
+          if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
+          return resp.json() as Promise<PassageDetail>;
+        })
+        .catch(async () => {
+          const bundle = await loadStaticCorpusBundle();
+          const staticDetail = bundle.passage_details[pid];
+          if (!staticDetail) throw new Error(`Failed to load passage '${pid}'`);
+          return staticDetail;
+        });
       setPassageCache((prev) => ({ ...prev, [pid]: detail }));
       return { graph: detail.hypergraph, report: detail.report, argdown: detail.argdown };
     }
@@ -163,10 +179,12 @@ export function HermeneuticPrismPanel({
     setAlignLoading(true);
     setAlignError(null);
 
+    const compositeSignal = AbortSignal.any([ctrl.signal, AbortSignal.timeout(3000)]);
+
     fetch("/api/align", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      signal: ctrl.signal,
+      signal: compositeSignal,
       body: JSON.stringify({
         graph_a: graphA,
         graph_b: graphB,
@@ -175,17 +193,22 @@ export function HermeneuticPrismPanel({
     })
       .then(async (resp) => {
         if (!resp.ok) {
-          const err = await resp.json().catch(() => ({ detail: resp.statusText }));
-          throw new Error(err.detail || "Graph alignment failed");
+          throw new Error(`HTTP ${resp.status}`);
         }
         return resp.json() as Promise<HypergraphAlignmentReport>;
       })
+      .catch(async (err) => {
+        if (ctrl.signal.aborted) throw err;
+        return alignGraphsStaticFallback(graphA, graphB, threshold);
+      })
       .then((data) => {
-        setAlignment(data);
-        setAlignLoading(false);
+        if (!ctrl.signal.aborted) {
+          setAlignment(data);
+          setAlignLoading(false);
+        }
       })
       .catch((err) => {
-        if ((err as Error).name !== "AbortError") {
+        if (!ctrl.signal.aborted && (err as Error).name !== "AbortError") {
           setAlignError(err instanceof Error ? err.message : String(err));
           setAlignLoading(false);
         }

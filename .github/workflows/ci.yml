@@ -1,0 +1,63 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  rust-and-corpus:
+    name: Rust Solver, Wasm & Corpus Spans
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: wasm32-unknown-unknown
+      - uses: Swatinem/rust-cache@v2
+      - name: Run Rust workspace unit tests
+        run: cargo test --workspace
+      - name: Build release CLI and WebAssembly solver
+        run: |
+          cargo build --release -p atlas-cli
+          cargo build --release -p atlas-wasm --target wasm32-unknown-unknown
+      - name: Verify strict character spans across all corpus & lens files
+        run: |
+          for f in datasets/phil-args/*.argdown datasets/hermeneutic-lenses/*.argdown; do
+            ./target/release/atlas-cli inspect "$f" --strict-spans >/dev/null
+            echo "Verified: $f"
+          done
+
+  python-backend:
+    name: Python ML & FastAPI Suite
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+      - uses: Swatinem/rust-cache@v2
+      - name: Build atlas-cli for IPC bridge
+        run: cargo build --release -p atlas-cli
+      - uses: astral-sh/setup-uv@v5
+      - name: Install Python dependencies and run pytest
+        working-directory: backend
+        run: |
+          uv python install 3.12
+          uv sync
+          uv run pytest -v
+
+  web-workbench:
+    name: Next.js Workbench Typecheck & Build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: "npm"
+          cache-dependency-path: web/package-lock.json
+      - name: Install, typecheck, and build web app
+        working-directory: web
+        run: |
+          npm ci
+          npm run lint
+          npm run build
