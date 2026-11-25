@@ -17,8 +17,9 @@ node_modules/
 dist/
 build/
 
-# OS & Secrets
+# OS, Scratch Reviews & Secrets
 .DS_Store
+.impeccable/review/
 .env
 .env.*
 !.env.example

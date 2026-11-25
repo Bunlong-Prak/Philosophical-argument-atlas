@@ -222,3 +222,32 @@ This document records all architectural decisions, mathematical formulations, em
 
 ### 3. UI Bug Caught & Fixed During Browser Audit
 - **Header Flex Overflow Across Three Tabs on 390px Mobile:** Adding `"Hermeneutic Prism"` to `.atlas-tablist` caused flex items without `min-inline-size: 0` or wrapping to widen `document.documentElement` past `390px`. Adding `.atlas-nav` (`min-inline-size: 0; max-inline-size: 100%`), `flex-wrap: wrap` on `.atlas-tablist`, compact mobile tab padding below `640px`, and removing the inner table height cap eliminated horizontal overflow (`overflow_mobile = false`, `overflow_lab_mobile = false`, `overflow_prism_mobile = false`).
+
+---
+
+## Milestone 2 (Unit 2.3) & Milestone 5 (Unit 5.2): `PhilArgs-12`, In-Browser WebAssembly Solver (`atlas-wasm`), and Flat-Graph Knockout Ablation
+- **Date:** 2026-11-24
+- **Status:** Implemented & Empirically Verified (`9/9` Rust workspace tests, `10/10` pytest, `18/18` strict-span `.argdown` files, `eval_full_benchmark.py` exit `0`, zero-backend Wasm + full-stack Playwright checks passing)
+
+### 1. Components Implemented
+1. **Zero-Dependency Rust WebAssembly Solver ([crates/atlas-wasm/src/lib.rs](file:///Users/mac/Projects/personal/Philosophy_in_AI/argument-atlas/crates/atlas-wasm/src/lib.rs), [web/src/lib/wasmSolver.ts](file:///Users/mac/Projects/personal/Philosophy_in_AI/argument-atlas/web/src/lib/wasmSolver.ts)):**
+   - Compiled `atlas-core` to `wasm32-unknown-unknown` (`349 KB` LTO-stripped `web/public/atlas_wasm.wasm`) exposing `atlas_alloc`, `atlas_dealloc`, `atlas_solve_json`, and `atlas_parse_argdown`.
+   - Avoided `std::time::Instant::now()` inside `wasm32-unknown-unknown` (which panics without WASI clocks) and measured microsecond solve latency on the JS side (`~62-63 µs` in headless Chrome), enabling 60fps slider updates and `.argdown` parsing without a Python server.
+2. **Multi-Tradition `PhilArgs-12` Corpus & 6 Rival Lenses ([datasets/phil-args](file:///Users/mac/Projects/personal/Philosophy_in_AI/argument-atlas/datasets/phil-args), [datasets/hermeneutic-lenses](file:///Users/mac/Projects/personal/Philosophy_in_AI/argument-atlas/datasets/hermeneutic-lenses)):**
+   - Doubled the primary strict-span corpus from 6 to 12 passages by adding Anselm vs. Gaunilo (`07`), Spinoza's *Ethics* I.p14 (`08`), Pascal's Wager (`09`), Aristotle's *Ergon* argument (`10`), Epicurus's Trilemma via Hume (`11`), and Zhuangzi's *Joy of Fish* (`12`).
+   - Added 2 new rival lenses: Diderot's *Many-Gods* objection to Pascal (`09_pascal_many_gods_lens.argdown`, shifting `[C]` from `0.6840 in` to `0.1368 out`) and a Plantinga-style *Free-Will Defense* lens on Epicurus (`11_epicurus_free_will_lens.argdown`, shifting `[C]` from `0.7900 in` to `0.1817 out`).
+3. **Static Corpus Bundle, TypeScript Kuhn-Munkres Aligner & Shareable Counterfactual URLs ([export_static_bundle.py](file:///Users/mac/Projects/personal/Philosophy_in_AI/argument-atlas/backend/scripts/export_static_bundle.py), [staticBundle.ts](file:///Users/mac/Projects/personal/Philosophy_in_AI/argument-atlas/web/src/lib/staticBundle.ts), [page.tsx](file:///Users/mac/Projects/personal/Philosophy_in_AI/argument-atlas/web/src/app/page.tsx)):**
+   - Exported `web/public/corpus-bundle.json` (`407.6 KB`) bundling all 12 solved passages, 6 solved lenses, and 105 normalized `BAAI/bge-small-en-v1.5` proposition embeddings, paired with an exact $O(N^3)$ Kuhn-Munkres bipartite matcher in TypeScript so static deployments run **Hermeneutic Prism** offline with identical scores to `scipy.optimize.linear_sum_assignment`.
+   - Added deep-link query synchronization (`?passage=...&tab=...&norm=...&c=E2:0.00`) and an accessible **Share state** header control.
+
+### 2. Full Empirical Benchmark Results ([eval_full_benchmark.py](file:///Users/mac/Projects/personal/Philosophy_in_AI/argument-atlas/backend/scripts/eval_full_benchmark.py))
+- **Part 1 (Bipolar Hypergraph vs. Standard Flat-Graph Premise Knockout Ablation):**
+  - Across all `9` passages in `PhilArgs-12` with an initially accepted thesis (`> 0.50`), dropping the #1 minimal knockout assumption (`E1` or `E2`) to `0.0` collapses the thesis to `0.0000` in our conjunctive Bipolar Hypergraph, whereas a flat node-to-node `DF-QuAD` graph produces **`9 / 9` (`100.0%`) false survivals** (`pascal-wager`: `0.9995`; `descartes`: `0.9927`; `epicurus`: `0.9923`; `hume`: `0.9897`; `spinoza`: `0.9855`; `zhuangzi`: `0.9766`; `aristotle`: `0.9272`; `mill`: `0.9120`; `dostoevsky`: `0.8600`).
+  - Median native Rust `atlas-cli` solve latency across `PhilArgs-12`: **`44 µs`** (mean `49.8 µs`, range `36 µs` to `105 µs`).
+- **Part 2 (Hermeneutic Prism Alignment Across 6 Lenses at $\tau = 0.72$):**
+  - Mean `Explicit Node F1 = 0.917` vs. Mean `Enthymeme F1 = 0.578`, empirically supporting Hypothesis $H_3$ across 6 classical interpretive disputes.
+- **Part 3 (`DeBERTa-v3` + `BGE-small` Enthymeme Audit Across 5 Passages x 4 Candidates = 20 Candidates):**
+  - Gold philosophical bridge premise ranked **#1 in `5 / 5` (`100.0%`)** passages: Descartes (`+0.512`), Hume (`+0.299`), Dostoevsky (`+0.844`), Aristotle (`+0.569`), and Spinoza (`+0.880`).
+
+### 3. Mobile Layout Bug Caught & Fixed During `PhilArgs-12` Browser Audit
+- **Long `<option>` Label Overflow on 390px Viewport:** Expanding `<select id="passage-select">` to `PhilArgs-12` introduced longer titles (`"Epicurus: Hume Problem Of Evil (6 nodes)"`), whose intrinsic width pushed `.atlas-brand-group` slightly past `390px` when `.atlas-select` lacked `flex: 1 1 auto; min-inline-size: 0`. Adding `flex: 1 1 auto; min-inline-size: 0; max-inline-size: 100%` on `.atlas-select`, `flex-wrap: wrap` on `.atlas-metrics-bar`, and positioning `.copy-status-tip` as an `opacity`-toggled overlay bubble resolved mobile overflow across all three tabs.

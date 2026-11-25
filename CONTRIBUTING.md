@@ -67,7 +67,7 @@ Run `./target/release/atlas-cli inspect <your-file> --strict-spans` and `make bu
 
 ---
 
-## 3. High-impact open ideas
+## 3. Open ideas to build next
 
 - **Classical Asian & Global Philosophy:** Nagarjuna's *Mulamadhyamakakarika* (tetralemma on causation), Mencius vs. Xunzi on human nature, Nyaya inference (*anumana*) five-member syllogisms, Ibn Sina's *Floating Man*.
 - **Epistemology & Metaphysics:** Sextus Empiricus (*Agrippa's Trilemma*), Berkeley's *Master Argument*, Leibniz's *Principle of Sufficient Reason*, Russell's *Inductive Chicken*.

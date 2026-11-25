@@ -1,173 +1,113 @@
-# Visual Guide to Argument Atlas
+# Visual guide to Argument Atlas
 
 This page explains how Argument Atlas works using short examples instead of long walls of math. Read any section on its own in two minutes.
 
----
+## 1. The big picture
 
-## 1. The big picture (in one picture)
-
-Imagine you paste a paragraph from Kant or Dostoevsky. Four steps turn that paragraph into something you can test:
+Imagine you paste a paragraph from Kant, Dostoevsky, or Zhuangzi. Four steps turn that paragraph into a formal structure you can test:
 
 ```text
-[1. Raw Text]  -->  [2. Quotes Checked]  -->  [3. Hidden Assumptions Audited]  -->  [4. Rust Solver]
-                       (no fake quotes)          (no lazy "If P then C")              (0.1 ms math)
+[1. Raw Text]  -->  [2. Quotes Checked]  -->  [3. Hidden Assumptions Audited]  -->  [4. Rust / Wasm Solver]
+                       (no fake quotes)          (no lazy "If P then C")              (~50 us math)
 ```
 
-1. **Quotes checked:** Every explicit claim must point to exact `[start..end]` character positions in the source text. If an AI invents a quote, the grounder drops it.
-2. **Hidden assumptions audited:** A local `DeBERTa-v3` NLI model checks whether a proposed unspoken assumption (*enthymeme*) actually bridges the gap from premises to conclusion.
-3. **Rust solver:** `atlas-core` runs formal logic and gradual belief math over the whole graph in about 50 to 100 microseconds.
-
----
+1. **Quotes checked:** Every explicit claim points to exact `[start..end]` character offsets in the source text. If an LLM invents a quote, the grounder drops it.
+2. **Hidden assumptions audited:** A local `DeBERTa-v3` NLI model checks whether a proposed unspoken assumption (*enthymeme*) bridges the logical gap from premises to conclusion without circularity.
+3. **Rust and WebAssembly solver:** `atlas-core` (and its `349 KB` browser build `atlas-wasm`) runs continuous belief propagation and discrete Dung logic in about 50 microseconds.
 
 ## 2. Four ideas, explained with real philosophy
 
 ### Idea A: Linked premises need hyperedges (Descartes)
 
-In normal arrow graphs, two premises pointing at a conclusion act like two separate doors: close one, and the other still lets you through.
+In flat arrow graphs, two premises pointing at a conclusion act like two separate doors: close one, and the other still lets 100% of its support leak through. Across our `PhilArgs-12` ablation ([eval_full_benchmark.py](file:///Users/mac/Projects/personal/Philosophy_in_AI/argument-atlas/backend/scripts/eval_full_benchmark.py)), flat graphs leave defeated theses falsely surviving above `0.86` in `9 / 9` cases (`100%`).
 
-Philosophical arguments usually work like a locked chain where every link is required at once.
+Philosophical arguments work like a locked chain where every premise in an inference step is required together:
 
 ```text
   [P1] "I am thinking" (1.00)  ----\
-                                    +==[H1]==>  [C] "I exist" (0.90)
+                                    +==[H1]==>  [C] "I exist" (0.74)
   [E1] "Whatever thinks exists"(0.9)/
 ```
 
-Because `H1` is a **conjunctive hyperedge** (`[P1] & [E1] +> [C]`), setting `E1` to `0.0` (Lichtenberg's objection that "it thinks" does not prove a persistent "I") collapses `H1` to `0.0`, even while `P1` stays at `1.0`.
+Because `H1` is a **conjunctive hyperedge** (`[P1] & [E1] +> [C]`), setting `E1` to `0.0` (Lichtenberg's objection that `"it thinks"` does not prove a persistent `"I"`) collapses `H1` and `C` to `0.0`, even while `P1` stays at `1.0`. Try it in [01_descartes_cogito.argdown](file:///Users/mac/Projects/personal/Philosophy_in_AI/argument-atlas/datasets/phil-args/01_descartes_cogito.argdown).
 
-Try it in [01_descartes_cogito.argdown](file:///Users/mac/Projects/personal/Philosophy_in_AI/argument-atlas/datasets/phil-args/01_descartes_cogito.argdown).
+### Idea B: Undercutters and reinstatement (Plato and Zhuangzi)
 
----
+There are two distinct ways to challenge an argument:
 
-### Idea B: Attacking a claim vs. attacking an arrow (Plato)
-
-There are two completely different ways to disagree with an argument:
-
-1. **Rebuttal (`->`):** Attack the claim directly ("Your conclusion is false").
-2. **Undercutter (`_>`):** Attack the inference arrow ("Even if your premise is true, it does not prove your conclusion").
+1. **Rebuttal (`->`):** Attack a proposition directly ("Your claim is false").
+2. **Undercutter (`_>`):** Attack the inference gate ("Even if your premise is true, your bridge to the conclusion fails").
 
 ```text
-  [P1] "Piety is what the gods love" ====[H1]====> [C] "Gods' love makes it holy"
+  [P1] "Minnows dart at ease" & [E1] ====[H1]====> [C] "Zhuangzi knows the joy of fish" (0.75 in)
                                            ^
-                                           |  (Undercut _>)
-  [U1] "Gods love it BECAUSE it is already holy"
+                                           |  (Undercut _> crushed to 0.05)
+  [D1] & [D2] (Zhuangzi's counter) ---> [O_hui] "You are not a fish; how can you know?" (0.05 out)
 ```
 
-In [04_plato_euthyphro_dilemma.argdown](file:///Users/mac/Projects/personal/Philosophy_in_AI/argument-atlas/datasets/phil-args/04_plato_euthyphro_dilemma.argdown), Socrates' objection `U1` undercuts `<H1>`, shrinking its effective transmission from `0.78` down to `0.1191`.
-
----
+In [04_plato_euthyphro_dilemma.argdown](file:///Users/mac/Projects/personal/Philosophy_in_AI/argument-atlas/datasets/phil-args/04_plato_euthyphro_dilemma.argdown), Socrates' undercutter shrinks Euthyphro's `<H1>` gate down to `0.1191`. In [12_zhuangzi_joy_of_fish.argdown](file:///Users/mac/Projects/personal/Philosophy_in_AI/argument-atlas/datasets/phil-args/12_zhuangzi_joy_of_fish.argdown), Huizi undercuts Zhuangzi (`O_hui _> <H1>`), and Zhuangzi defeats `O_hui` right back (`D1` and `D2 -> O_hui`), reinstating `<H1>` and `[C] = 0.7502 (in)`.
 
 ### Idea C: Deadlocks split into two worlds (Kant)
 
 What happens when two arguments attack each other with equal force?
 
-In [05_kant_third_antinomy.argdown](file:///Users/mac/Projects/personal/Philosophy_in_AI/argument-atlas/datasets/phil-args/05_kant_third_antinomy.argdown):
-- **Thesis:** Free causality must exist to avoid an infinite regress.
-- **Antithesis:** Everything follows deterministic laws of nature with zero freedom.
-- Both attack each other (`Thesis <-> Antithesis`).
-
-Two things happen when `atlas-cli` solves Kant's antinomy:
-- **Continuous math (`DF-QuAD`):** Both settle into a tie at `0.4000` (using damped updates so the cycle converges instead of bouncing forever).
-- **Discrete Dung logic:** `Grounded` leaves both `Undecided`, while `Preferred` extensions split cleanly into two consistent worldviews: one containing `Thesis`, and one containing `Antithesis`.
-
----
+In [05_kant_third_antinomy.argdown](file:///Users/mac/Projects/personal/Philosophy_in_AI/argument-atlas/datasets/phil-args/05_kant_third_antinomy.argdown), `Thesis` (free causality) and `Antithesis` (universal determinism) attack each other symmetrically (`Thesis <-> Antithesis`):
+- **Continuous math (`DF-QuAD`):** Damped relaxation converges cleanly to a tie at `0.4000` instead of oscillating forever.
+- **Discrete Dung logic:** `Grounded` marks both `undecided`, while `Preferred` extensions split into two internally consistent worldviews (`{Thesis}` vs. `{Antithesis}`).
 
 ### Idea D: Catching circular AI assumptions (`DeBERTa-v3`)
 
-Ask an LLM for the hidden assumption between Premise `P` and Conclusion `C`, and it often cheats in two ways:
-- **Tautology cheat:** `"If P, then C."` (Technically makes Modus Ponens pass, adds zero philosophical substance.)
-- **Usurpation cheat:** Restates `C` directly so `P` is not needed at all.
+Ask an LLM for the missing premise between `P` and `C`, and it often cheats:
+- **Tautology cheat:** `"If P, then C."` (Passes Modus Ponens on paper, adds zero philosophical content.)
+- **Usurpation cheat:** Paraphrases `C` directly so `P` becomes irrelevant.
 
-Our NLI scorer in [nli_enthymeme.py](file:///Users/mac/Projects/personal/Philosophy_in_AI/argument-atlas/backend/src/atlas_ml/nli_enthymeme.py) scores candidate assumptions across three checks:
-1. **Gain (`delta_nli`):** Does `P + E` entail `C` much better than `P` alone?
-2. **Circularity (`usurpation_score`):** Does `E` entail `C` by itself, or paraphrase `C`?
-3. **Tautology (`triviality_penalty`):** Does `E` closely match `"If P, then C"` while introducing little or no new vocabulary?
+Our scorer in [nli_enthymeme.py](file:///Users/mac/Projects/personal/Philosophy_in_AI/argument-atlas/backend/src/atlas_ml/nli_enthymeme.py) combines three checks:
+1. **Gain (`delta_nli`):** Does `P + E` entail `C` substantially better than `P` alone?
+2. **Circularity (`usurpation_score`):** Does `E` entail or paraphrase `C` by itself?
+3. **Tautology (`triviality_penalty`):** Does `E` match `"If P, then C"` without adding new concepts?
 
-You can watch those numbers live across Descartes, Hume, and Dostoevsky by running:
-
-```bash
-cd backend && uv run python scripts/eval_enthymeme_ablation.py
-```
-
----
+Across Descartes, Hume, Dostoevsky, Aristotle, and Spinoza (`make benchmark`), this scorer ranks the true philosophical bridge #1 in `5 / 5` passages (`100%`).
 
 ## 3. One-minute file map
 
-When you want to change something, jump straight to that folder:
-
 ```text
 argument-atlas/
-├── crates/atlas-core/src/
-│   ├── model.rs        <-- Graph types + exact character span check
-│   ├── gradual.rs      <-- DF-QuAD continuous belief propagation
-│   ├── dung.rs         <-- Grounded / Preferred / Stable extension solver
-│   ├── knockout.rs     <-- Finds weakest assumptions to collapse a thesis
-│   └── argdown.rs      <-- Reads and writes .argdown files
+├── crates/atlas-core/src/         <-- Rust hypergraph types, DF-QuAD, Dung, knockouts, .argdown
+├── crates/atlas-wasm/src/lib.rs   <-- Browser WebAssembly C-ABI exports (349 KB .wasm)
 ├── crates/atlas-cli/src/main.rs   <-- Terminal commands (inspect, solve, convert)
-├── datasets/phil-args/            <-- 6 curated public-domain passages
-├── datasets/hermeneutic-lenses/   <-- 4 rival interpretive readings for comparison
-├── backend/src/atlas_ml/          <-- Python ML, NLI, aligner & FastAPI server
-│   ├── schemas.py      <-- Python models + quote repair (DeterministicSpanGrounder)
-│   ├── rust_bridge.py  <-- Calls compiled Rust binary over JSON stdin/stdout
-│   ├── nli_enthymeme.py<-- Local DeBERTa-v3 + BGE-small assumption scorer
-│   ├── graph_aligner.py<-- Compares two graphs via Hungarian matching
-│   ├── extractor.py    <-- LLM JSON extractor -> grounder -> NLI -> Rust
-│   └── api.py          <-- FastAPI HTTP endpoints (/passages, /hermeneutic-lenses, /solve, /align, /compare-text)
-└── web/src/                       <-- Next.js 16 + React Flow Interactive Workbench
-    ├── app/            <-- Top workbench layout, Critical-Edition CSS tokens, page state
-    ├── components/     <-- SourceReader, HypergraphCanvas, ApparatusInspector, HermeneuticPrismPanel, CustomLabPanel
-    └── lib/            <-- Shared TypeScript API types + ELK layered graph builder
+├── datasets/phil-args/            <-- PhilArgs-12 strict-span public-domain corpus
+├── datasets/hermeneutic-lenses/   <-- 6 rival philosophical lenses for comparison
+├── backend/src/atlas_ml/          <-- Span grounder, Rust IPC, DeBERTa-v3 NLI, aligner, FastAPI
+├── backend/scripts/               <-- Benchmark & static bundle scripts (eval_full_benchmark.py)
+└── web/src/                       <-- Next.js 16 + React Flow Workbench + Wasm + Share URLs
+    ├── app/                       <-- Top workbench layout, CSS tokens, URL query state
+    ├── components/                <-- SourceReader, HypergraphCanvas, ApparatusInspector, Prism, Lab
+    └── lib/                       <-- wasmSolver.ts, staticBundle.ts (Kuhn-Munkres), elkLayout.ts
 ```
 
----
+## 4. Using the Visual Workbench (`web/`)
 
-## 4. Talking to the API
-
-Start the backend:
-
-```bash
-cd backend
-uv run uvicorn atlas_ml.api:create_app --factory --reload --port 8000
-```
-
-Useful endpoints right away (open interactive docs at `http://127.0.0.1:8000/docs`):
-- `GET /passages` lists all 6 curated passages.
-- `GET /passages/kant-third-antinomy` returns the full hypergraph, `.argdown` text, and solver output.
-- `GET /hermeneutic-lenses` returns the 4 rival philosophical interpretations paired with Rust solver reports.
-- `POST /solve` takes any modified hypergraph (for instance, changing a premise's `base_credence` from `0.9` to `0.0`) and returns updated `DF-QuAD`, `Dung`, and knockout outputs.
-- `POST /parse-argdown` parses raw `.argdown` text offline into a solved hypergraph package.
-- `POST /score-enthymemes` ranks candidate hidden assumptions using local `DeBERTa-v3`.
-- `POST /align` aligns two graphs for cross-model or cross-interpretation comparison.
-- `POST /extract` and `POST /compare-text` extract graphs from raw text using Groq, OpenAI, Anthropic, or local Ollama (returning HTTP `503` when required cloud keys are unset).
-
----
-
-## 5. Using the Visual Workbench (`web/`)
-
-With FastAPI running on port `8000`, launch the web UI in a second terminal:
-
-```bash
-cd web
-npm install
-npm run dev
-```
-
-Open `http://localhost:3000`. Use the top tabs to switch between three focused views:
+You can run `cd web && npm run dev` on its own (zero-backend Wasm mode) or alongside `make dev-api` (full Python ML mode). Open `http://localhost:3000`:
 
 ### Tab 1: Dialectical Workbench
-The Workbench splits into three synchronized panes so you keep track of which box matches which sentence:
-
-1. **Left pane (`SourceReader`):** Reads the primary passage in warm archival serif type. Explicit premises carry crisp cobalt underlines (`[P1]`), theses carry green (`[C]`), and hidden assumptions sit listed below in dashed amber boxes (`[E1]`). Hovering or selecting any sentence illuminates its node on the graph.
-2. **Center pane (`HypergraphCanvas`):** Renders the layered Bipolar Hypergraph via ELK and React Flow. Solid cobalt lines show active logical support, dashed amber lines mark unspoken assumptions and Pollock undercutters, and red arrows mark direct rebuttals. Notice what happens when an assumption fails: its inference gate flips to `SEVERED` and turns muted gray dashed strokes.
-3. **Right pane (`ApparatusInspector`):** Gives each root assumption a live credence slider (`0.00` to `1.00`), plus one-click **Test** buttons beside the ranked **Minimal Knockouts**. Click **Test** on `[E2]` in Dostoevsky's Rebellion to drop it to `0.00` and watch Thesis `[C]` fall from `0.7125` to `0.0000` in under 1 millisecond, then click **Reset** or toggle between **Gödel min** and **Product** T-norms.
+- **Left pane (`SourceReader`):** Displays the primary passage with clickable quote underlines (`[P1]`, `[C]`) and dashed amber cards for unspoken assumptions (`[E1]`).
+- **Center pane (`HypergraphCanvas`):** Draws propositions and conjunctive `<H>` gates via ELK and React Flow. Knock out an assumption and watch its gate flip to `SEVERED`.
+- **Right pane (`ApparatusInspector`):** Drag credence sliders (`0.00` to `1.00`) at 60fps via `atlas-wasm`, click **Test** on any **Minimal Knockout**, switch between **Godel min** and **Product** T-norms, and click **Share state** in the top header to copy a counterfactual URL (`?passage=pascal-wager&c=E2:0.00`).
 
 ### Tab 2: Hermeneutic Prism
-Compare two readings of a philosophical text side-by-side:
-- Pick **Reading A** (any curated corpus passage or your current modified Workbench graph) and **Reading B** (a curated rival lens like *Teleological Theodicy Challenge* on Dostoevsky or *Humean Compatibilist Reading* on Kant).
-- Slide **Cosine Similarity Threshold (tau)** from `0.45` to `0.95`. Watch `Explicit Claims F1`, `Enthymemes F1`, `Support Gates F1`, `Rebuttals F1`, `Undercutters F1`, and `Thesis Outcome Shift` update immediately.
-- Read the matched pair table below plus the dashed `Unique to Reading A` and `Unique to Reading B` cards, or click **Open Reading B in Workbench** to stress-test the rival lens directly on the graph canvas.
+- Compare **Reading A** and **Reading B** across all 6 rival philosophical lenses (including Diderot's *Many-Gods* critique of Pascal and the *Free-Will Defense* against Epicurus).
+- Drag **Cosine Similarity Threshold (`tau`)** from `0.45` to `0.95` to inspect matched claims, structural F1 scores, and `Thesis Outcome Shift` (works both via FastAPI `/api/align` and offline via pre-computed `BGE-small` vectors in `corpus-bundle.json`).
 
 ### Tab 3: Custom Text & NLI Lab
-Need to test your own argument? Open **Custom Text & NLI Lab**:
-- Use **DeBERTa-v3 Enthymeme Auditor** on the left to test candidate hidden assumptions locally (with one-click Descartes and Dostoevsky presets).
-- Use **Load Custom Argument Graph** on the right in `.argdown (Offline)` mode to write or edit formal arguments with zero API keys, or switch to `Raw Text (LLM)` to run extraction with Groq, OpenAI, Anthropic, or local Ollama.
+- **Right card (`.argdown` Offline):** Write or paste any `.argdown` specification and parse + solve it directly in the browser via WebAssembly.
+- **Left card (`DeBERTa-v3` Enthymeme Auditor) & Raw Text (`LLM`):** Connect local FastAPI (`make dev-api`) to audit candidate hidden assumptions with PyTorch `DeBERTa-v3` or extract graphs from raw prose via Groq, OpenAI, Anthropic, or Ollama.
+
+## 5. Talking to the Python API
+
+Start FastAPI on port `8000` (`make dev-api`) and open interactive Swagger docs at `http://127.0.0.1:8000/docs`:
+- `GET /passages` and `GET /passages/{id}` serve all 12 solved corpus passages.
+- `GET /hermeneutic-lenses` serves all 6 rival philosophical lenses.
+- `POST /solve` and `POST /parse-argdown` run native Rust solving and `.argdown` parsing.
+- `POST /score-enthymemes` ranks candidate hidden assumptions with local `DeBERTa-v3`.
+- `POST /align` aligns any two hypergraphs using live `BAAI/bge-small-en-v1.5` embeddings.
+- `POST /extract` and `POST /compare-text` run multi-provider LLM extraction and cross-model comparison (returning HTTP `503` when required cloud keys are unset).
